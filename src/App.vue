@@ -17,6 +17,8 @@ import { ENTRY_SCORE, RULES_SOURCE, TARGET_SCORE, farkleProbability, scoringOpti
 
 const STORAGE_KEY = "farkle.table.v1";
 const format = (value) => value.toLocaleString("en-US");
+
+// localStorage 内容可能来自旧版本或已损坏；校验完整状态后才恢复对局。
 function restore() {
     try {
         const value = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -103,6 +105,7 @@ const setupNames = ref(["", ""]);
 const aiChoice = ref("");
 let aiTimer, rollTimer, rollInterval, toastTimer, audioContext;
 
+// 这些值只从当前对局派生，避免 UI 持有与游戏状态不一致的副本。
 const isAi = computed(() => game.value.mode === "ai" && game.value.active === 1);
 const player = computed(() => game.value.players[game.value.active]);
 const round = computed(() => Math.ceil(game.value.turn / 2));
@@ -197,6 +200,7 @@ function suggest() {
 function doRoll(ids = selected.value, automated = false) {
     if (rolling.value || (isAi.value && !automated)) return;
     try {
+        // 先计算确定的回合结果，再播放视觉动画；动画结束时一次性提交新状态。
         const result = rollDice(game.value, ids);
         const count = result.dice.length;
         rolling.value = true;
@@ -295,6 +299,7 @@ function closeDialog() {
     modal.value = null;
 }
 watch([game, rolling, modal], automate);
+// 对局状态持续保存；结束时自动打开结果弹窗。
 watch(game, (value) => {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
@@ -303,6 +308,7 @@ watch(game, (value) => {
     }
     if (value.phase === "finished") modal.value = "winner";
 });
+// 使用原生 dialog 模态能力，并在 DOM 更新后同步其打开状态。
 watch(modal, async (value) => {
     await nextTick();
     if (value && !dialog.value.open) dialog.value.showModal();
@@ -364,6 +370,7 @@ onBeforeUnmount(() => {
             </section>
 
             <div class="game-layout">
+                <!-- 左侧是当前对局与动态，右侧提供规则速查和 Hot Dice 提示。 -->
                 <section class="main-column" aria-label="Farkle 对局">
                     <div class="game-toolbar">
                         <div class="mode-tabs" role="group" aria-label="游戏模式">
