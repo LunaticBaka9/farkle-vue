@@ -8,7 +8,8 @@ defineProps({ targetScore: Number, format: Function });
         <div>
             <div class="eyebrow"><span class="green-dot"></span> ROLL THE DICE. OWN THE MOMENT.</div>
             <h1>再掷一次，<span>好运在手。</span></h1>
-            <p>是落袋为安，还是放手一搏？让每一次选择，都值得心跳。</p>
+            <!-- 副标题使用响应式字号，避免大屏字体过小或窄屏文字拥挤。 -->
+            <p class="page-heading-subtitle">是落袋为安，还是放手一搏？让每一次选择，都值得心跳。</p>
         </div>
         <div class="target-badge">
             <span class="target-icon"><AppIcon name="trophy" :size="24" /></span>

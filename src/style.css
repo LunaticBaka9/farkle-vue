@@ -223,8 +223,10 @@
     .page-heading h1 span {
         color: #c6d1be;
     }
-    .page-heading p {
-        font-size: 11px;
+    /* 副标题使用 vw 与 clamp 形成流体字号：大屏保持清晰，小屏按比例缩小且不低于可读尺寸。 */
+    .page-heading p,
+    .page-heading-subtitle {
+        font-size: clamp(14px, 1vw, 16px);
         color: #839180;
         line-height: 1.8;
         letter-spacing: 0.2px;
@@ -1723,8 +1725,9 @@
         .page-heading h1 {
             font-size: 30px;
         }
-        .page-heading p {
-            font-size: 10px;
+        .page-heading p,
+        .page-heading-subtitle {
+            font-size: clamp(12px, 1.8vw, 14px);
         }
         .main-content {
             padding-top: 29px;
@@ -1846,10 +1849,11 @@
             margin-top: 12px;
             white-space: nowrap;
         }
-        .page-heading p {
-            font-size: 9px;
+        .page-heading p,
+        .page-heading-subtitle {
+            font-size: 12px;
             max-width: 235px;
-            line-height: 1.9;
+            line-height: 1.7;
         }
         .target-badge {
             gap: 6px;
@@ -2349,13 +2353,104 @@
         border-radius: 12px;
     }
     .winner-activity-button { width: 100%; margin-top: 9px; }
+
+    /* 面板正文统一提高可读性：标题保持信息层级，正文至少达到移动端常用的 12px 基线。 */
+    .site-header button { font-size: clamp(12px, 1vw, 13px); }
+    .sound-toggle span { font-size: clamp(11px, 0.9vw, 12px); }
+    .header-motto { font-size: clamp(9px, 0.8vw, 11px); }
+    .eyebrow { font-size: clamp(8px, 0.7vw, 9px); }
+    .target-badge small { font-size: clamp(10px, 0.9vw, 11px); }
+    .mode-tabs button { font-size: clamp(12px, 1vw, 13px); }
+    .mode-tag { font-size: clamp(9px, 0.75vw, 10px); }
+    .text-button { font-size: clamp(11px, 0.95vw, 12px); }
+    .player-identity h2 { font-size: clamp(14px, 1.15vw, 16px); }
+    .player-identity > span { font-size: clamp(9px, 0.75vw, 10px); }
+    .ai-label { font-size: clamp(8px, 0.65vw, 9px); }
+    .current-badge, .waiting-label { font-size: clamp(9px, 0.8vw, 10px); }
+    .score-number > span { font-size: clamp(11px, 0.9vw, 12px); }
+    .table-topline { font-size: clamp(10px, 0.85vw, 11px); }
+    .table-caption { font-size: clamp(8px, 0.75vw, 9px); }
+    .table-overline { font-size: clamp(12px, 1vw, 13px); }
+    .turn-description { font-size: clamp(12px, 1vw, 13px); }
+    .selection-line { font-size: clamp(12px, 1vw, 13px); }
+    .suggest-button { font-size: clamp(11px, 0.95vw, 12px); }
+    .kept-label, .kept-placeholder { font-size: clamp(10px, 0.85vw, 11px); }
+    .kept-note { font-size: clamp(9px, 0.75vw, 10px); }
+    .button { font-size: clamp(12px, 1vw, 13px); }
+    .bank-button strong, .button-count { font-size: clamp(11px, 0.95vw, 12px); }
+    .table-footnote, .final-notice { font-size: clamp(10px, 0.85vw, 11px); }
+    .auto-handoff { font-size: clamp(12px, 1vw, 13px); }
+    .section-title h2 { font-size: clamp(14px, 1.15vw, 16px); }
+    .section-title > span { font-size: clamp(8px, 0.75vw, 9px); }
+    .activity-empty p, .activity-list li { font-size: clamp(12px, 1vw, 13px); }
+    .activity-list b { font-size: clamp(11px, 0.95vw, 12px); }
+    .activity-list b.farkle { font-size: clamp(10px, 0.85vw, 11px); }
+    .activity-list b small, .activity-list time { font-size: clamp(9px, 0.75vw, 10px); }
+    .final-tag { font-size: clamp(9px, 0.75vw, 10px); }
+    .guide-description, .hot-dice-card p, .entry-note p, .sidebar-quote p { font-size: clamp(11px, 0.95vw, 12px); }
+    .single-scoring > div, .score-rule { font-size: clamp(12px, 1vw, 13px); }
+    .single-scoring strong { font-size: clamp(14px, 1.2vw, 16px); }
+    .score-guide strong small, .rule-hint, .full-rules-link { font-size: clamp(10px, 0.85vw, 11px); }
+    .hot-eyebrow { font-size: clamp(8px, 0.7vw, 9px); }
+    .hot-dice-card h3 { font-size: clamp(14px, 1.15vw, 16px); }
+    .hot-tag { font-size: clamp(9px, 0.75vw, 10px); }
+    .dialog-intro { font-size: clamp(12px, 1vw, 13px); }
+    .rules-steps h3, .setup-mode-options strong { font-size: clamp(13px, 1.1vw, 14px); }
+    .rules-steps p, .example-note p, .setup-mode-options span,
+    .field-hint, .setup-notice { font-size: clamp(11px, 0.95vw, 12px); }
+    .field-label, input, select { font-size: clamp(12px, 1vw, 13px); }
+    .target-input-wrap > span, .target-presets > button { font-size: clamp(11px, 0.95vw, 12px); }
+    .final-scores span { font-size: clamp(12px, 1vw, 13px); }
+    .final-scores small { font-size: clamp(9px, 0.75vw, 10px); }
+    .toast-message { font-size: clamp(12px, 1vw, 13px); }
+    .activity-details-button { font-size: clamp(11px, 0.95vw, 12px); }
+    .activity-detail-main span { font-size: clamp(12px, 1vw, 13px); }
+    .activity-detail-main small { font-size: clamp(10px, 0.85vw, 11px); }
 }
 
 @layer responsive {
+    /* 统一处理窄屏面板：提高正文基线，同时避免装饰标签和标题被过度放大。 */
     @media (max-width: 700px) {
         .finished-actions { grid-template-columns: 1fr; }
         .activity-detail-content { padding: 38px 22px 24px; }
         .activity-detail-list li { align-items: flex-start; }
         .activity-detail-main span, .activity-detail-main small { display: block; margin: 4px 0 0; }
+        .activity-detail-main span { font-size: 13px; }
+        .activity-detail-main small { font-size: 11px; }
+
+        .site-header button { font-size: 12px; }
+        .sound-toggle span { font-size: 11px; }
+        .eyebrow { font-size: 8px; }
+        .mode-tabs button { font-size: 12px; }
+        .text-button { font-size: 12px; }
+        .player-identity h2 { font-size: 14px; }
+        .player-identity > span, .current-badge, .waiting-label { font-size: 10px; }
+        .ai-label { font-size: 8px; }
+        .score-number > span { font-size: 11px; }
+        .table-topline, .table-caption { font-size: 10px; }
+        .turn-description, .selection-line, .auto-handoff { font-size: 12px; }
+        .suggest-button, .kept-label, .kept-placeholder, .kept-note { font-size: 11px; }
+        .button { font-size: 12px; }
+        .button-count, .bank-button strong { font-size: 11px; }
+        .table-footnote, .final-notice { font-size: 10px; }
+        .section-title h2 { font-size: 14px; }
+        .section-title > span { font-size: 9px; }
+        .activity-empty p, .activity-list li { font-size: 12px; }
+        .activity-list b { font-size: 12px; }
+        .activity-list b.farkle, .activity-list b small, .activity-list time { font-size: 10px; }
+        .activity-details-button { font-size: 12px; }
+        .guide-description, .single-scoring > div, .score-rule,
+        .hot-dice-card p, .entry-note p, .sidebar-quote p { font-size: 12px; }
+        .single-scoring strong { font-size: 14px; }
+        .full-rules-link, .score-guide strong small, .rule-hint { font-size: 11px; }
+        .hot-dice-card h3 { font-size: 14px; }
+        .hot-eyebrow, .hot-tag { font-size: 9px; }
+        .dialog-intro, .rules-steps p, .example-note p,
+        .setup-mode-options span, .field-hint, .setup-notice { font-size: 12px; }
+        .rules-steps h3, .setup-mode-options strong { font-size: 13px; }
+        .field-label, input, select, .target-presets > button { font-size: 12px; }
+        .final-scores span { font-size: 12px; }
+        .final-scores small { font-size: 9px; }
+        .toast-message { font-size: 12px; }
     }
 }
