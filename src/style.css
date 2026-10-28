@@ -1,3 +1,10 @@
+/* 视觉样式总表：采用 CSS cascade layers 分层，避免布局、组件和响应式规则互相覆盖。 */
+/*
+ * base：全局变量、重置、字体和基础可访问性
+ * layout：页面骨架与主次栏布局
+ * components：牌桌、按钮、弹窗和数据展示组件
+ * responsive：窄屏、触屏和动态高度适配
+ */
 @layer base, layout, components, responsive;
 
 @layer base {

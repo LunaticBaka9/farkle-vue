@@ -1,8 +1,17 @@
+// 计分规则与概率工具模块。
+// 本模块只负责纯计算，不读取或修改 Vue 响应式状态。
 // PlayMonster Farkle rules. Combinations must come from the same roll.
+/** 默认获胜分数。 */
 export const TARGET_SCORE = 10000;
+/** 首次收分门槛。 */
 export const ENTRY_SCORE = 500;
+/** 完整规则说明链接。 */
 export const RULES_SOURCE = "https://www.playmonster.com/wp-content/uploads/2018/06/Farkle-Rules.pdf";
 
+/**
+ * 计算一组同一次投掷中骰子的得分。
+ * 只接受合法的 1–6 点数组；空数组、超长数组或非法点数返回 0。
+ */
 export function scoreDice(values) {
     if (!values.length || values.length > 6 || values.some((v) => !Number.isInteger(v) || v < 1 || v > 6)) return 0;
     const counts = Array(6).fill(0);
@@ -25,6 +34,10 @@ export function scoreDice(values) {
     return total;
 }
 
+/**
+ * 穷举当前骰子的所有选择组合，并按分数由高到低排列。
+ * remaining 用于 AI 估算下一次掷剩余骰子的爆骰风险。
+ */
 export function scoringOptions(dice) {
     const options = [];
     for (let mask = 1; mask < 2 ** dice.length; mask++) {
@@ -35,6 +48,10 @@ export function scoringOptions(dice) {
     return options.sort((a, b) => b.score - a.score || a.remaining - b.remaining);
 }
 
+/**
+ * 快速判断骰子组合是否至少存在一种计分方式。
+ * 此函数用于掷骰后立刻判定 Farkle，不计算具体分数。
+ */
 export function hasScore(values) {
     // 快速判断是否存在任意可计分骰，供爆骰判定使用。
     if (values.includes(1) || values.includes(5)) return true;
@@ -44,6 +61,10 @@ export function hasScore(values) {
 }
 
 const riskCache = new Map();
+/**
+ * 精确计算掷出指定数量骰子后完全没有得分组合的概率。
+ * 结果按骰子数量缓存，避免重复枚举。
+ */
 export function farkleProbability(count) {
     if (!Number.isInteger(count) || count < 1 || count > 6) throw new RangeError("Dice count must be 1–6");
     if (riskCache.has(count)) return riskCache.get(count);

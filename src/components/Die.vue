@@ -1,3 +1,4 @@
+<!-- 单颗骰子的外观、点数、选中状态与交互按钮。 -->
 <script setup>
 import AppIcon from "./AppIcon.vue";
 defineProps({

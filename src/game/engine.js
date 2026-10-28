@@ -1,9 +1,17 @@
+// 对局引擎模块：实现不可变对局状态转换、回合规则和 AI 决策。
+// 每个公开动作接收旧 game 对象并返回新的 game 对象，调用方无需手动深拷贝。
 import { ENTRY_SCORE, TARGET_SCORE, hasScore, scoreDice, scoringOptions, farkleProbability } from "./scoring.js";
 
+/**
+ * 校验获胜分数是否安全且符合 500 分间隔。
+ */
 export function isValidTargetScore(score) {
     return Number.isSafeInteger(score) && score >= 1000 && score <= 100000 && score % 500 === 0;
 }
 
+/**
+ * 创建初始对局：设置玩家、回合、骰子、阶段、历史和获胜目标。
+ */
 export function createGame(mode = "ai", difficulty = "balanced", targetScore = TARGET_SCORE) {
     if (!isValidTargetScore(targetScore)) throw new RangeError("获胜分数必须为 1,000–100,000 之间的 500 倍数");
     return {
@@ -30,9 +38,15 @@ export function createGame(mode = "ai", difficulty = "balanced", targetScore = T
 }
 
 // 各动作先复制状态再返回新对象，避免调用方意外修改旧对局。
+/**
+ * JSON 深拷贝当前状态。引擎中的所有公开变更都先复制再修改。
+ */
 function copy(game) {
     return JSON.parse(JSON.stringify(game));
 }
+/**
+ * 添加收分或 Farkle 事件，并维持最多 30 条对局动态记录。
+ */
 function addEvent(game, type, points = 0) {
     const event = {
         id: `${game.turn}-${game.rollNumber}-${game.history.length}`,
@@ -47,12 +61,18 @@ function addEvent(game, type, points = 0) {
     game.history = game.history.slice(0, 30);
 }
 
+/**
+ * 计算用户当前选择的骰子 ID 对应的计分；重复 ID 或非法 ID 返回 0。
+ */
 export function selectionScore(game, ids) {
     if (!ids.length || new Set(ids).size !== ids.length) return 0;
     const chosen = game.dice.filter((d) => ids.includes(d.id));
     return chosen.length === ids.length ? scoreDice(chosen.map((d) => d.value)) : 0;
 }
 
+/**
+ * 判断收分动作是否合法，包括首次收分门槛和必须选择计分骰子的规则。
+ */
 export function canBank(game, ids = []) {
     if (game.phase !== "selecting") return false;
     const selected = selectionScore(game, ids);
@@ -63,6 +83,10 @@ export function canBank(game, ids = []) {
 }
 
 // Passing in a RNG keeps the rules deterministic and testable.
+/**
+ * 执行掷骰或继续掷骰。
+ * random 参数允许测试注入固定随机序列；默认使用浏览器随机数。
+ */
 export function rollDice(game, ids = [], random = Math.random) {
     if (!["ready", "selecting"].includes(game.phase)) throw new Error("当前不能掷骰");
     const next = copy(game);
@@ -108,6 +132,9 @@ function endTurn(game) {
     return game;
 }
 
+/**
+ * 将选中得分与当前回合累计得分收入玩家总分，并处理交接或最终回合。
+ */
 export function bankPoints(game, ids = []) {
     if (!canBank(game, ids)) throw new Error("首次收分需达到 500 分，且所选骰子必须全部可计分");
     const next = copy(game);
@@ -122,11 +149,13 @@ export function bankPoints(game, ids = []) {
     return endTurn(next);
 }
 
+/** 处理 Farkle 后的回合结束，并进入交接或最终结果阶段。 */
 export function finishFarkle(game) {
     if (game.phase !== "farkle") throw new Error("尚未出现 Farkle");
     return endTurn(copy(game));
 }
 
+/** 重置回合临时状态，并把控制权交给下一位玩家。 */
 export function startNextTurn(game) {
     if (game.phase !== "handoff") throw new Error("当前无需交接回合");
     const next = copy(game);
@@ -141,6 +170,9 @@ export function startNextTurn(game) {
 }
 
 // Uses exact next-roll Farkle probability, available scoring subsets and score gap.
+/**
+ * AI 根据爆骰概率、剩余骰数、分差和当前难度评估最佳动作。
+ */
 export function chooseAiMove(game) {
     if (game.phase === "ready") return { type: "roll", ids: [] };
     if (game.phase !== "selecting") return null;
