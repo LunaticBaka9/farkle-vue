@@ -1,6 +1,7 @@
 // 对局组合式函数模块：集中管理页面响应式状态、持久化、动画、音效和 AI 自动流程。
 // 规则计算委托给 game/engine.js 和 game/scoring.js，不在此模块重复实现计分规则。
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
+import { defineStore } from "pinia";
 import {
     bankPoints,
     canBank,
@@ -14,8 +15,8 @@ import {
 } from "../game/engine.js";
 import { ENTRY_SCORE, TARGET_SCORE, farkleProbability, scoringOptions } from "../game/scoring.js";
 
-export // localStorage 使用固定版本键；恢复时会对关键字段执行结构校验。
-const STORAGE_KEY = "farkle.table.v1";
+// localStorage 使用固定版本键；恢复时会对关键字段执行结构校验。
+export const STORAGE_KEY = "farkle.table.v1";
 export const format = (value) => value.toLocaleString("en-US");
 
 /**
@@ -85,7 +86,7 @@ function restore() {
  * 创建并导出 App 使用的完整对局状态与动作。
  * 返回值中的 computed/ref 可直接绑定到页面组件。
  */
-export function useFarkleGame() {
+export const useFarkleStore = defineStore("farkle", () => {
     const restored = restore();
     const game = shallowRef(restored || createGame());
     const selected = ref([]);
@@ -93,7 +94,6 @@ export function useFarkleGame() {
     const rollingFaces = ref([]);
     const sound = ref(false);
     const modal = ref(null);
-    const dialog = ref(null);
     const toast = ref("");
     const setupMode = ref(game.value.mode);
     const setupDifficulty = ref(game.value.difficulty);
@@ -305,7 +305,6 @@ export function useFarkleGame() {
 
     // 监听对局、动画和弹窗状态，以便 AI 能够继续执行下一步动作。
     watch([game, rolling, modal], automate);
-    watch([game, rolling, modal], automate);
     // 持久化对局；若浏览器禁止 localStorage，则对局仍可正常游玩。
     watch(game, (value) => {
         try {
@@ -314,12 +313,6 @@ export function useFarkleGame() {
             /* playable without storage */
         }
         if (value.phase === "finished") modal.value = "winner";
-    });
-    // 原生 dialog 的打开状态必须等待 Vue DOM 更新后再同步。
-    watch(modal, async (value) => {
-        await nextTick();
-        if (value && dialog.value && !dialog.value.open) dialog.value.showModal();
-        else if (!value && dialog.value?.open) dialog.value.close();
     });
     // 挂载后恢复提示、自动打开已结束对局，以及启动 AI 自动机。
     onMounted(() => {
@@ -345,7 +338,6 @@ export function useFarkleGame() {
         rollingFaces,
         sound,
         modal,
-        dialog,
         toast,
         setupMode,
         setupDifficulty,
@@ -383,4 +375,4 @@ export function useFarkleGame() {
         newGame,
         closeDialog,
     };
-}
+});

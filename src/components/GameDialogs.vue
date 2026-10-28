@@ -34,6 +34,7 @@ const emit = defineEmits([
     "update:setupDifficulty",
     "update:setupTargetScore",
     "update:setupNames",
+    "openActivity",
 ]);
 // dialog 指向原生 <dialog> 元素，用于调用浏览器的 showModal/close API。
 // dialog 指向原生 <dialog>，用于调用 showModal 和 close。
@@ -62,7 +63,7 @@ watch(
     <dialog
         ref="dialog"
         class="game-dialog"
-        :aria-labelledby="modal === 'rules' ? 'rules-title' : modal === 'setup' ? 'setup-title' : 'winner-title'"
+        :aria-labelledby="modal === 'rules' ? 'rules-title' : modal === 'setup' ? 'setup-title' : modal === 'activity' ? 'activity-title' : 'winner-title'"
         @cancel.prevent="$emit('close')"
         @click="
             (event) => {
@@ -223,6 +224,36 @@ watch(
                 开始新对局<AppIcon name="arrow" :size="18" />
             </button>
         </form>
+        <!-- 对局动态弹窗：展示本局全部收分和 Farkle 记录，不截取最近五条。 -->
+        <section v-else-if="modal === 'activity'" class="activity-detail-content">
+            <div class="eyebrow">THE COMPLETE STORY</div>
+            <h2 id="activity-title">本局动态详情</h2>
+            <p class="dialog-intro">按时间顺序回顾当前对局的全部收分与 Farkle 动态。</p>
+            <ol v-if="game.history.length" class="activity-detail-list">
+                <li v-for="(event, index) in game.history" :key="event.id">
+                    <span class="event-icon" :class="event.type">
+                        <AppIcon :name="event.type === 'bank' ? 'check' : 'close'" :size="12" />
+                    </span>
+                    <div class="activity-detail-main">
+                        <strong>{{ event.name }}</strong>
+                        <span>{{ event.type === "bank" ? "落袋为安" : "遭遇 Farkle" }}</span>
+                        <small>第 {{ Math.ceil(event.turn / 2) }} 轮</small>
+                        <small v-if="event.final" class="final-tag">触发最终回合</small>
+                    </div>
+                    <b :class="event.type">
+                        {{ event.type === "bank" ? "+" + format(event.points) : event.points ? "失去 " + format(event.points) : "本回合归零" }}
+                        <small v-if="event.type === 'bank'">分</small>
+                    </b>
+                </li>
+            </ol>
+            <div v-else class="activity-detail-empty">
+                <AppIcon name="history" :size="28" />
+                <p>当前对局还没有收分或 Farkle 动态。</p>
+            </div>
+            <button class="button button-primary dialog-main-action" @click="$emit('close')">
+                返回对局<AppIcon name="arrow" :size="17" />
+            </button>
+        </section>
         <!-- 结果弹窗：根据 game.winner 展示获胜者或平局，并汇总最终得分。 -->
         <!-- 结果弹窗：展示获胜者或平局，并汇总两个玩家的最终得分。 -->
         <section v-else-if="modal === 'winner'" class="winner-content">
@@ -245,7 +276,9 @@ watch(
             </div>
             <button class="button button-primary dialog-main-action" @click="$emit('openSetup')">
                 再来一局<AppIcon name="restart" :size="17" /></button
-            ><button class="text-button return-table" @click="$emit('close')">回到牌桌查看记录</button>
+            ><button class="button button-secondary winner-activity-button" @click="$emit('openActivity')">
+                查看动态详情<AppIcon name="history" :size="17" />
+            </button><button class="text-button return-table" @click="$emit('close')">回到牌桌查看记录</button>
         </section>
     </dialog>
 </template>

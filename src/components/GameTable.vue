@@ -23,7 +23,7 @@ defineProps({
     showHandoff: Boolean,
     entryScore: Number,
 });
-defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "openWinner"]);
+defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "openWinner", "openActivity"]);
 </script>
 <template>
     <section
@@ -138,6 +138,9 @@ defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "o
                 <AppIcon name="restart" :size="18" />再来一局</button
             ><button class="button button-secondary" @click="$emit('openWinner')">
                 查看结果<AppIcon name="trophy" :size="17" />
+            </button>
+            <button class="button button-secondary activity-action" @click="$emit('openActivity')">
+                查看动态详情<AppIcon name="history" :size="17" />
             </button>
         </div>
         <div v-else class="table-actions">

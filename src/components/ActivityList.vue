@@ -2,12 +2,15 @@
 <script setup>
 import AppIcon from "./AppIcon.vue";
 defineProps({ history: Array, format: Function });
+defineEmits(["openDetails"]);
 </script>
 <template>
     <section class="activity-section" aria-label="对局记录">
         <div class="section-title">
             <h2><AppIcon name="history" :size="17" />对局动态</h2>
-            <span>THE STORY SO FAR</span>
+            <button class="activity-details-button" type="button" @click="$emit('openDetails')">
+                查看详情<AppIcon name="chevron" :size="13" />
+            </button>
         </div>
         <div v-if="!history.length" class="activity-empty">
             <span class="empty-spark">✦</span>

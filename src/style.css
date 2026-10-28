@@ -2285,3 +2285,77 @@
         }
     }
 }
+
+@layer components {
+    /* 对局动态入口按钮：始终保持在标题右侧且不抢占主要内容。 */
+    .activity-details-button {
+        border: 0;
+        background: transparent;
+        color: var(--lime);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 0;
+        font-size: 9px;
+        letter-spacing: 0;
+    }
+    .activity-details-button:hover { color: #d8f0b7; }
+
+    /* 游戏结束时增加动态入口，三个操作按钮在桌面端平均分配宽度。 */
+    .finished-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .activity-action { white-space: nowrap; }
+
+    /* 动态详情弹窗：最多高度滚动，同时保留当前最后一条的重要信息。 */
+    .activity-detail-content {
+        max-width: 620px;
+        max-height: min(760px, calc(100vh - 48px));
+        overflow-y: auto;
+        padding: 44px 48px 38px;
+    }
+    .activity-detail-content h2 { margin-top: 8px; }
+    .activity-detail-list {
+        list-style: none;
+        margin: 24px 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+        max-height: 430px;
+        overflow-y: auto;
+    }
+    .activity-detail-list li {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 10px;
+    }
+    .activity-detail-main { flex: 1; min-width: 0; }
+    .activity-detail-main strong { color: #d4dfca; margin-right: 7px; }
+    .activity-detail-main span { color: #93a28a; font-size: 11px; }
+    .activity-detail-main small { display: inline-block; margin-left: 8px; color: #75846e; font-size: 9px; }
+    .activity-detail-main .final-tag { color: #d8c18b; }
+    .activity-detail-empty {
+        margin: 24px 0;
+        min-height: 180px;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 12px;
+        color: #75846e;
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+    }
+    .winner-activity-button { width: 100%; margin-top: 9px; }
+}
+
+@layer responsive {
+    @media (max-width: 700px) {
+        .finished-actions { grid-template-columns: 1fr; }
+        .activity-detail-content { padding: 38px 22px 24px; }
+        .activity-detail-list li { align-items: flex-start; }
+        .activity-detail-main span, .activity-detail-main small { display: block; margin: 4px 0 0; }
+    }
+}

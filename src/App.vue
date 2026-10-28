@@ -9,14 +9,12 @@ import ScoringSidebar from "./components/ScoringSidebar.vue";
 import GameDialogs from "./components/GameDialogs.vue";
 import GameFooter from "./components/GameFooter.vue";
 import AppIcon from "./components/AppIcon.vue";
-import { useFarkleGame } from "./composables/useFarkleGame.js";
+import { storeToRefs } from "pinia";
+import { useFarkleStore } from "./stores/farkle.js";
 
-// 对局状态、计算属性和动作统一来自此组合式函数。
-
-// 解构响应式状态和方法后，模板只负责展示与绑定，不维护重复业务副本。
+// Store 是全应用唯一数据源；storeToRefs 保持状态在模板和组件间响应式同步。
+const farkle = useFarkleStore();
 const {
-    ENTRY_SCORE,
-    format,
     game,
     selected,
     rolling,
@@ -39,13 +37,17 @@ const {
     nextRisk,
     entryMissing,
     showHandoff,
-    progress,
-    difficultyLabels,
     headline,
     selectionText,
     winnerLabel,
     round,
     isAi,
+} = storeToRefs(farkle);
+
+const {
+    format,
+    progress,
+    difficultyLabels,
     toggleSound,
     toggleDie,
     suggest,
@@ -56,7 +58,8 @@ const {
     selectMode,
     newGame,
     closeDialog,
-} = useFarkleGame();
+    ENTRY_SCORE,
+} = farkle;
 </script>
 
 <template>
@@ -105,9 +108,14 @@ const {
                         @next-turn="nextTurn"
                         @open-setup="openSetup()"
                         @open-winner="modal = 'winner'"
+                        @open-activity="modal = 'activity'"
                     />
 
-                    <ActivityList :history="game.history" :format="format" />
+                    <ActivityList
+                        :history="game.history"
+                        :format="format"
+                        @open-details="modal = 'activity'"
+                    />
                 </section>
                 <ScoringSidebar :format="format" @open-rules="modal = 'rules'" />
             </div>
@@ -135,6 +143,7 @@ const {
             @close="closeDialog"
             @new-game="newGame"
             @open-setup="openSetup()"
+            @open-activity="modal = 'activity'"
             @update:setup-mode="setupMode = $event"
             @update:setup-difficulty="setupDifficulty = $event"
             @update:setup-target-score="setupTargetScore = $event"
