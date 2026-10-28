@@ -25,9 +25,11 @@ const {
     setupMode,
     setupDifficulty,
     setupTargetScore,
+    setupEntryScore,
     setupNames,
     targetScore,
     targetInputValid,
+    entryInputValid,
     chosenScore,
     pendingScore,
     validSelection,
@@ -100,7 +102,7 @@ const {
                         :next-risk="nextRisk"
                         :entry-missing="entryMissing"
                         :show-handoff="showHandoff"
-                        :entry-score="ENTRY_SCORE"
+                        :entry-score="game.entryScore ?? ENTRY_SCORE"
                         @toggle-die="toggleDie"
                         @suggest="suggest"
                         @roll="doRoll()"
@@ -117,7 +119,7 @@ const {
                         @open-details="modal = 'activity'"
                     />
                 </section>
-                <ScoringSidebar :format="format" @open-rules="modal = 'rules'" />
+                <ScoringSidebar :format="format" :entry-score="game.entryScore ?? ENTRY_SCORE" @open-rules="modal = 'rules'" />
             </div>
         </main>
 
@@ -138,8 +140,10 @@ const {
             :setup-mode="setupMode"
             :setup-difficulty="setupDifficulty"
             :setup-target-score="setupTargetScore"
+            :setup-entry-score="setupEntryScore"
             :setup-names="setupNames"
             :target-input-valid="targetInputValid"
+            :entry-input-valid="entryInputValid"
             @close="closeDialog"
             @new-game="newGame"
             @open-setup="openSetup()"
@@ -147,6 +151,7 @@ const {
             @update:setup-mode="setupMode = $event"
             @update:setup-difficulty="setupDifficulty = $event"
             @update:setup-target-score="setupTargetScore = $event"
+            @update:setup-entry-score="setupEntryScore = $event"
             @update:setup-names="setupNames = $event"
         />
     </div>

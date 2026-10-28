@@ -1373,8 +1373,12 @@
         font-size: 11px;
         color: #bdcda9;
     }
-    .target-setup {
+    .target-setup,
+    .entry-score-setup {
         margin: 0 0 22px;
+    }
+    .entry-score-setup .target-input-wrap {
+        margin-top: 9px;
     }
     .target-input-wrap {
         position: relative;

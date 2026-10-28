@@ -154,7 +154,7 @@ defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "o
             ><button
                 class="button button-secondary bank-button"
                 :disabled="!canBankNow"
-                :title="entryMissing ? '首次收分需在同一回合累计至少 500 分' : '把本回合得分加入总分'"
+                :title="entryMissing ? `首次收分需在同一回合累计至少 ${format(entryScore)} 分` : '把本回合得分加入总分'"
                 @click="$emit('bank')"
             >
                 <AppIcon name="bank" :size="18" /><span>收分 · 结束回合</span

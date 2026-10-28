@@ -12,18 +12,31 @@ import { RULES_SOURCE } from "../game/scoring.js";
 
 // Props 是只读输入：组件根据 modal 决定展示哪一种弹窗。
 
-const { modal, game, format, winnerLabel, setupMode, setupDifficulty, setupTargetScore, setupNames, targetInputValid } =
-    defineProps({
-        modal: String,
-        game: Object,
-        format: Function,
-        winnerLabel: String,
-        setupMode: String,
-        setupDifficulty: String,
-        setupTargetScore: Number,
-        setupNames: Array,
-        targetInputValid: Boolean,
-    });
+const {
+    modal,
+    game,
+    format,
+    winnerLabel,
+    setupMode,
+    setupDifficulty,
+    setupTargetScore,
+    setupEntryScore,
+    setupNames,
+    targetInputValid,
+    entryInputValid,
+} = defineProps({
+    modal: String,
+    game: Object,
+    format: Function,
+    winnerLabel: String,
+    setupMode: String,
+    setupDifficulty: String,
+    setupTargetScore: Number,
+    setupEntryScore: Number,
+    setupNames: Array,
+    targetInputValid: Boolean,
+    entryInputValid: Boolean,
+});
 // Emits 将用户操作明确回传给 App；setup 表单字段由父组件保存。
 // Emits 将用户操作回传给父组件；setup 表单字段仍由父组件保存。
 const emit = defineEmits([
@@ -33,6 +46,7 @@ const emit = defineEmits([
     "update:setupMode",
     "update:setupDifficulty",
     "update:setupTargetScore",
+    "update:setupEntryScore",
     "update:setupNames",
     "openActivity",
 ]);
@@ -46,6 +60,7 @@ const dialog = ref(null);
 const mode = computed({ get: () => setupMode, set: (v) => emit("update:setupMode", v) });
 const difficulty = computed({ get: () => setupDifficulty, set: (v) => emit("update:setupDifficulty", v) });
 const target = computed({ get: () => setupTargetScore, set: (v) => emit("update:setupTargetScore", v) });
+const entryScore = computed({ get: () => setupEntryScore, set: (v) => emit("update:setupEntryScore", v) });
 // modal 同时控制模板分支和原生弹窗的打开状态。
 // 等 DOM 更新后再调用 showModal，确保弹窗内容已经渲染完成。
 // 等 Vue 完成 DOM 更新后，再同步原生弹窗的打开状态。
@@ -63,7 +78,15 @@ watch(
     <dialog
         ref="dialog"
         class="game-dialog"
-        :aria-labelledby="modal === 'rules' ? 'rules-title' : modal === 'setup' ? 'setup-title' : modal === 'activity' ? 'activity-title' : 'winner-title'"
+        :aria-labelledby="
+            modal === 'rules'
+                ? 'rules-title'
+                : modal === 'setup'
+                  ? 'setup-title'
+                  : modal === 'activity'
+                    ? 'activity-title'
+                    : 'winner-title'
+        "
         @cancel.prevent="$emit('close')"
         @click="
             (event) => {
@@ -75,7 +98,7 @@ watch(
             <AppIcon name="close" :size="20" />
         </button>
         <!-- 规则弹窗：展示回合流程、计分说明和规则来源。 -->
-                <!-- 规则弹窗：展示四个回合步骤、示例说明、规则来源和确认按钮。 -->
+        <!-- 规则弹窗：展示四个回合步骤、示例说明、规则来源和确认按钮。 -->
         <section v-if="modal === 'rules'" class="rules-content">
             <div class="eyebrow">A QUICK GUIDE TO GOOD TIMES</div>
             <h2 id="rules-title">六颗骰子，一场冒险。</h2>
@@ -96,8 +119,11 @@ watch(
                     <div>
                         <h3>继续冒险，还是落袋为安？</h3>
                         <p>
-                            继续掷剩余骰子，或点击「收分」将本回合得分加入总分。首次上分需要在同一回合累计至少 500
-                            分，以后没有最低门槛。
+                            继续掷剩余骰子，或点击「收分」将本回合得分加入总分。{{
+                                (game.entryScore ?? 500) === 0
+                                    ? "首次收分不设最低门槛，只需选择有效计分骰子。"
+                                    : `首次收分需在同一回合累计至少 ${format(game.entryScore ?? 500)} 分；之后没有最低门槛。`
+                            }}
                         </p>
                     </div>
                 </li>
@@ -135,8 +161,8 @@ watch(
                 明白了，骰子交给我<AppIcon name="arrow" :size="17" />
             </button>
         </section>
+
         <!-- 对局设置弹窗：受控表单通过 emit 汇报模式、目标分数、AI 难度和玩家名。 -->
-        <!-- 对局设置弹窗：表单只报告模式、目标分数、AI 难度和玩家名，不创建对局。 -->
         <form v-else-if="modal === 'setup'" class="setup-content" @submit.prevent="$emit('newGame')">
             <div class="eyebrow">A FRESH START</div>
             <h2 id="setup-title">新的对局，新的可能。</h2>
@@ -194,6 +220,45 @@ watch(
                     }}
                 </p>
             </div>
+            <div class="entry-score-setup">
+                <label class="field-label" for="entry-score">首次收分门槛</label>
+                <div class="target-input-wrap">
+                    <input
+                        id="entry-score"
+                        v-model.number="entryScore"
+                        type="number"
+                        inputmode="numeric"
+                        min="0"
+                        max="10000"
+                        step="50"
+                        required
+                        :aria-invalid="!entryInputValid"
+                        aria-describedby="entry-score-hint"
+                    /><span>分</span>
+                </div>
+                <div class="target-presets" aria-label="常用首次收分门槛">
+                    <button
+                        v-for="preset in [0, 300, 500, 1000]"
+                        :key="preset"
+                        type="button"
+                        :class="{ chosen: Number(entryScore) === preset }"
+                        :aria-pressed="Number(entryScore) === preset"
+                        @click="entryScore = preset"
+                    >
+                        {{ preset === 0 ? "无限制" : format(preset) }}
+                    </button>
+                </div>
+                <p id="entry-score-hint" class="field-hint" :class="{ 'hint-error': !entryInputValid }">
+                    {{
+                        entryInputValid
+                            ? Number(entryScore) === 0
+                                ? "无限制：首次收分只需选择有效计分骰子。默认门槛为 500 分。"
+                                : "首次收分需在同一回合累计达到该分数，之后不再限制。"
+                            : "请输入 0–10,000 之间的 50 倍数。"
+                    }}
+                </p>
+            </div>
+
             <template v-if="mode === 'ai'"
                 ><label class="field-label" for="ai-difficulty">AI 风格</label
                 ><select id="ai-difficulty" v-model="difficulty">
@@ -220,7 +285,11 @@ watch(
                 /></label>
             </div>
             <p class="setup-notice"><AppIcon name="info" :size="14" />开始新对局将重置当前得分及对局记录。</p>
-            <button type="submit" class="button button-primary dialog-main-action" :disabled="!targetInputValid">
+            <button
+                type="submit"
+                class="button button-primary dialog-main-action"
+                :disabled="!targetInputValid || !entryInputValid"
+            >
                 开始新对局<AppIcon name="arrow" :size="18" />
             </button>
         </form>
@@ -241,7 +310,13 @@ watch(
                         <small v-if="event.final" class="final-tag">触发最终回合</small>
                     </div>
                     <b :class="event.type">
-                        {{ event.type === "bank" ? "+" + format(event.points) : event.points ? "失去 " + format(event.points) : "本回合归零" }}
+                        {{
+                            event.type === "bank"
+                                ? "+" + format(event.points)
+                                : event.points
+                                  ? "失去 " + format(event.points)
+                                  : "本回合归零"
+                        }}
                         <small v-if="event.type === 'bank'">分</small>
                     </b>
                 </li>
@@ -277,8 +352,8 @@ watch(
             <button class="button button-primary dialog-main-action" @click="$emit('openSetup')">
                 再来一局<AppIcon name="restart" :size="17" /></button
             ><button class="button button-secondary winner-activity-button" @click="$emit('openActivity')">
-                查看动态详情<AppIcon name="history" :size="17" />
-            </button><button class="text-button return-table" @click="$emit('close')">回到牌桌查看记录</button>
+                查看动态详情<AppIcon name="history" :size="17" /></button
+            ><button class="text-button return-table" @click="$emit('close')">回到牌桌查看记录</button>
         </section>
     </dialog>
 </template>

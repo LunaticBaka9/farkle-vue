@@ -2,23 +2,28 @@
 // 每个公开动作接收旧 game 对象并返回新的 game 对象，调用方无需手动深拷贝。
 import { ENTRY_SCORE, TARGET_SCORE, hasScore, scoreDice, scoringOptions, farkleProbability } from "./scoring.js";
 
-/**
- * 校验获胜分数是否安全且符合 500 分间隔。
- */
+/** 校验获胜分数是否安全且符合 500 分间隔。 */
 export function isValidTargetScore(score) {
     return Number.isSafeInteger(score) && score >= 1000 && score <= 100000 && score % 500 === 0;
 }
 
+/** 校验首次收分门槛；0 表示关闭门槛，允许完成首次有效收分。 */
+export function isValidEntryScore(score) {
+    return Number.isSafeInteger(score) && score >= 0 && score <= 10000 && score % 50 === 0;
+}
+
 /**
- * 创建初始对局：设置玩家、回合、骰子、阶段、历史和获胜目标。
+ * 创建初始对局：设置玩家、回合、骰子、阶段、获胜目标和首次收分门槛。
  */
-export function createGame(mode = "ai", difficulty = "balanced", targetScore = TARGET_SCORE) {
+export function createGame(mode = "ai", difficulty = "balanced", targetScore = TARGET_SCORE, entryScore = ENTRY_SCORE) {
     if (!isValidTargetScore(targetScore)) throw new RangeError("获胜分数必须为 1,000–100,000 之间的 500 倍数");
+    if (!isValidEntryScore(entryScore)) throw new RangeError("首次收分门槛必须为 0–10,000 之间的 50 倍数");
     return {
         version: 1,
         mode,
         difficulty,
         targetScore,
+        entryScore,
         players: [
             { name: mode === "ai" ? "你" : "玩家一", score: 0 },
             { name: mode === "ai" ? "NOVA" : "玩家二", score: 0 },
@@ -79,7 +84,8 @@ export function canBank(game, ids = []) {
     // At least one scoring die must be set aside after every roll.
     if (!selected) return false;
     const total = game.turnScore + selected;
-    return total > 0 && (game.players[game.active].score > 0 || total >= ENTRY_SCORE);
+    const entryScore = game.entryScore ?? ENTRY_SCORE;
+    return total > 0 && (game.players[game.active].score > 0 || entryScore === 0 || total >= entryScore);
 }
 
 // Passing in a RNG keeps the rules deterministic and testable.
@@ -136,7 +142,7 @@ function endTurn(game) {
  * 将选中得分与当前回合累计得分收入玩家总分，并处理交接或最终回合。
  */
 export function bankPoints(game, ids = []) {
-    if (!canBank(game, ids)) throw new Error("首次收分需达到 500 分，且所选骰子必须全部可计分");
+    if (!canBank(game, ids)) throw new Error("未达到首次收分门槛，或所选骰子含有不可计分骰子");
     const next = copy(game);
     const points = next.turnScore + selectionScore(next, ids);
     next.players[next.active].score += points;
@@ -169,45 +175,97 @@ export function startNextTurn(game) {
     return next;
 }
 
-// Uses exact next-roll Farkle probability, available scoring subsets and score gap.
+// AI 的决策分为两阶段：先枚举所有合法计分组合，再根据风险、得分、分差和游戏阶段逐项打分。
 /**
- * AI 根据爆骰概率、剩余骰数、分差和当前难度评估最佳动作。
+ * 选择 AI 的下一次行动。
+ *
+ * 算法不是随机猜测，而是对当前骰面生成的每一种合法计分组合执行一次启发式估算：
+ * 1. 计算保留该组合后，本回合累计得到多少分，以及下一次还能掷几颗骰子。
+ * 2. 使用 scoring.js 中的精确概率计算下一次掷骰出现 Farkle 的风险。
+ * 3. 根据 AI 难度风格、双方分差和是否处于最终回合，估算继续掷骰的期望收益。
+ * 4. 若没有首次收分门槛限制、已达到目标分或继续掷收益为负，则选择收分；否则继续掷。
+ *
+ * 组合选项本身来自 scoringOptions()：它会穷举当前六颗骰子的合法子集，但只保留合法计分组合。
+ * 最终排序会优先选择能够直接赢得最终回合、能够触发目标分或具有最高综合效用的组合。
  */
 export function chooseAiMove(game) {
+    // 回合刚开始时没有可选择的骰子，因此 AI 的唯一合法动作是掷出全部六颗。
     if (game.phase === "ready") return { type: "roll", ids: [] };
+
+    // AI 只会在掷骰完成并进入 selecting 阶段时分析选骰方案；Farkle 或交接阶段没有决策动作。
     if (game.phase !== "selecting") return null;
+
     const options = scoringOptions(game.dice);
     const player = game.players[game.active];
     const opponent = game.players[1 - game.active];
+
+    // finalTurn 表示当前玩家正在执行触发目标分后的最后一个回合。
+    // 最终回合会让 AI 更偏向追分，而不是保守收分，以免总分低于对手。
     const finalTurn = game.finalStarter !== null && game.active !== game.finalStarter;
+
+    // AI 风格通过乘数影响“继续掷”的收益：
+    // cautious 收益较低，更倾向收分；balanced 为基准；bold 会放大继续冒险的收益。
     const attitude = { cautious: 0.72, balanced: 1, bold: 1.38 }[game.difficulty] || 1;
+
+    // 对每一种计分方案分别计算是否收分，以及继续掷骰的综合效用。
     const evaluated = options.map((option) => {
+        // total 是本回合已有得分加上当前方案分数；AI 能否收分时必须考虑整个回合累计值。
         const total = game.turnScore + option.score;
+
+        // remaining 表示保留 option 后还能掷的骰子数量。
+        // 六颗全保留时规则会触发 Hot Dice，因此 remaining 为 0 时仍按重新掷六颗处理。
         const remaining = option.remaining || 6;
+
+        // risk 是下一次掷 remaining 颗骰子后完全没有计分组合的精确爆骰概率；值越高越危险。
         const risk = farkleProbability(remaining);
-        const canStop = player.score > 0 || total >= ENTRY_SCORE;
+
+        // 首次收分门槛由当前对局配置决定；0 表示无限制。
+        // 玩家已经有总分后，本回合不再受首次收分门槛限制。
+        const entryScore = game.entryScore ?? ENTRY_SCORE;
+        const canStop = player.score > 0 || entryScore === 0 || total >= entryScore;
+
+        // winsFinal 和 reachesTarget 用于判断当前方案是否直接形成胜局优势或触发最终回合。
         const winsFinal = finalTurn && player.score + total > opponent.score;
         const reachesTarget = !finalTurn && player.score + total >= game.targetScore;
-        // Expected next-roll gain, adjusted by personality and match position.
+
+        // gain 是剩余骰数对应的经验性下一掷收益：剩余越少，继续掷通常越危险，理论收益越小。
+        // 数组下标刚好对应 remaining；这里只是启发式估值，不参与实际计分。
         const gain = [0, 25, 65, 110, 180, 280, 450][remaining];
+
+        // chasing 会根据 AI 与对手的分差提高追分程度，但最高限制为 1.3，避免分差过大时无限放大。
         const chasing = Math.min(1.3, 1 + Math.max(0, opponent.score - player.score) / 16000);
+
+        // continueValue = 继续掷的正收益 - 爆骰损失：
+        // (1 - risk) × 下一掷经验收益 × 风格 × 追分系数  减去  risk × 本回合可能损失的累计得分。
         const continueValue = (1 - risk) * gain * attitude * chasing - risk * total;
-        // 若最终回合仍落后，AI 必须继续追分；否则可按收益或胜局条件收分。
+
+        // finalTurn 中只要当前方案连对手都追不上，就禁止收分，强制继续寻找更高分方案。
         const mustChase = finalTurn && player.score + total <= opponent.score;
+
+        // 满足首次收分规则后，AI 在以下任一情况下收分：
+        // 1. 当前方案可直接赢得最终回合；2. 可触发目标分/最终回合；3. 继续掷的期望收益已变为负值。
         const stop = canStop && !mustChase && (winsFinal || reachesTarget || continueValue <= 0);
+
         return {
             ...option,
             type: stop ? "bank" : "roll",
+            // 收分方案优先只看实际能得到的分；继续掷方案额外叠加下一掷的期望收益。
             utility: option.score + (stop ? 0 : continueValue),
             winsFinal,
             reachesTarget,
         };
     });
+
+    // 排序优先级从高到低：
+    // 1. 能够赢下最终回合；2. 能触发目标分/最终回合；3. 当前方案的综合效用最高。
+    // 第一项和第二项必须排在组合分数之前，避免 AI 虽然选高分却错失直接获胜机会。
     evaluated.sort(
         (a, b) =>
             Number(b.winsFinal) - Number(a.winsFinal) ||
             Number(b.reachesTarget) - Number(a.reachesTarget) ||
             b.utility - a.utility,
     );
+
+    // 返回最高优先级方案，其中 ids 是本次应保留的骰子 ID，type 决定收分或继续掷。
     return evaluated[0];
 }

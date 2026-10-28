@@ -2,7 +2,7 @@
 <script setup>
 import AppIcon from "./AppIcon.vue";
 import Die from "./Die.vue";
-defineProps({ format: Function });
+defineProps({ format: Function, entryScore: Number });
 defineEmits(["openRules"]);
 </script>
 <template>
@@ -58,7 +58,8 @@ defineEmits(["openRules"]);
         </section>
         <div class="entry-note">
             <AppIcon name="shield" :size="16" />
-            <p>首次收分，至少累计 <strong>500 分</strong>。<br />之后每回合随时可以见好就收。</p>
+            <p v-if="entryScore > 0">首次收分，至少累计 <strong>{{ format(entryScore) }} 分</strong>。<br />之后每回合随时可以见好就收。</p>
+            <p v-else>首次收分无最低门槛。<br />选择有效计分骰子即可落袋为安。</p>
         </div>
         <div class="sidebar-quote">
             <span>✧</span>

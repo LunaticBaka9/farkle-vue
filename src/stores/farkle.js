@@ -12,6 +12,7 @@ import {
     rollDice,
     selectionScore,
     startNextTurn,
+    isValidEntryScore,
 } from "../game/engine.js";
 import { ENTRY_SCORE, TARGET_SCORE, farkleProbability, scoringOptions } from "../game/scoring.js";
 
@@ -29,7 +30,8 @@ function restore() {
         if (value?.version !== 1 || !["ai", "local"].includes(value.mode) || ![0, 1].includes(value.active))
             return null;
         const targetScore = value.targetScore ?? TARGET_SCORE;
-        if (!isValidTargetScore(targetScore)) return null;
+        const entryScore = value.entryScore ?? ENTRY_SCORE;
+        if (!isValidTargetScore(targetScore) || !isValidEntryScore(entryScore)) return null;
         if (
             !Array.isArray(value.players) ||
             value.players.length !== 2 ||
@@ -76,7 +78,7 @@ function restore() {
             return null;
         if (![null, 0, 1].includes(value.finalStarter) || ![null, 0, 1, "tie"].includes(value.winner)) return null;
         if (value.phase === "finished" && value.winner === null) return null;
-        return { ...value, targetScore };
+        return { ...value, targetScore, entryScore };
     } catch {
         return null;
     }
@@ -98,6 +100,7 @@ export const useFarkleStore = defineStore("farkle", () => {
     const setupMode = ref(game.value.mode);
     const setupDifficulty = ref(game.value.difficulty);
     const setupTargetScore = ref(game.value.targetScore);
+    const setupEntryScore = ref(game.value.entryScore ?? ENTRY_SCORE);
     const setupNames = ref(["", ""]);
     const aiChoice = ref("");
     let aiTimer, rollTimer, rollInterval, toastTimer, audioContext;
@@ -108,6 +111,7 @@ export const useFarkleStore = defineStore("farkle", () => {
     const round = computed(() => Math.ceil(game.value.turn / 2));
     const targetScore = computed(() => game.value.targetScore);
     const targetInputValid = computed(() => isValidTargetScore(Number(setupTargetScore.value)));
+    const entryInputValid = computed(() => isValidEntryScore(Number(setupEntryScore.value)));
     const chosenScore = computed(() => selectionScore(game.value, selected.value));
     const pendingScore = computed(() => game.value.turnScore + chosenScore.value);
     const validSelection = computed(() => chosenScore.value > 0);
@@ -123,7 +127,10 @@ export const useFarkleStore = defineStore("farkle", () => {
     );
     const nextRisk = computed(() => Math.round(farkleProbability(nextDiceCount.value) * 100));
     const entryMissing = computed(
-        () => game.value.players[game.value.active].score === 0 && pendingScore.value < ENTRY_SCORE,
+        () => {
+            const entryScore = game.value.entryScore ?? ENTRY_SCORE;
+            return game.value.players[game.value.active].score === 0 && entryScore > 0 && pendingScore.value < entryScore;
+        },
     );
     const showHandoff = computed(() => ["farkle", "handoff"].includes(game.value.phase));
     const progress = (score) => `${Math.min((score / targetScore.value) * 100, 100)}%`;
@@ -272,6 +279,7 @@ export const useFarkleStore = defineStore("farkle", () => {
         setupMode.value = mode;
         setupDifficulty.value = game.value.difficulty;
         setupTargetScore.value = game.value.targetScore;
+        setupEntryScore.value = game.value.entryScore ?? ENTRY_SCORE;
         setupNames.value = game.value.mode === "local" ? game.value.players.map((p) => p.name) : ["", ""];
         modal.value = "setup";
     }
@@ -287,7 +295,16 @@ export const useFarkleStore = defineStore("farkle", () => {
             notify("获胜分数须为 1,000–100,000 之间的 500 倍数。");
             return;
         }
-        const fresh = createGame(setupMode.value, setupDifficulty.value, Number(setupTargetScore.value));
+        if (!entryInputValid.value) {
+            notify("首次收分门槛须为 0–10,000 之间的 50 倍数。");
+            return;
+        }
+        const fresh = createGame(
+            setupMode.value,
+            setupDifficulty.value,
+            Number(setupTargetScore.value),
+            Number(setupEntryScore.value),
+        );
         if (setupMode.value === "local")
             fresh.players.forEach((p, i) => {
                 p.name = setupNames.value[i].trim().slice(0, 24) || `玩家${i === 0 ? "一" : "二"}`;
@@ -342,6 +359,7 @@ export const useFarkleStore = defineStore("farkle", () => {
         setupMode,
         setupDifficulty,
         setupTargetScore,
+        setupEntryScore,
         setupNames,
         aiChoice,
         isAi,
@@ -349,6 +367,7 @@ export const useFarkleStore = defineStore("farkle", () => {
         round,
         targetScore,
         targetInputValid,
+        entryInputValid,
         chosenScore,
         pendingScore,
         validSelection,
