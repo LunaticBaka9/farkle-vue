@@ -58,12 +58,10 @@ defineEmits(["openRules"]);
         </section>
         <div class="entry-note">
             <AppIcon name="shield" :size="16" />
-            <p v-if="entryScore > 0">首次收分，至少累计 <strong>{{ format(entryScore) }} 分</strong>。<br />之后每回合随时可以见好就收。</p>
+            <p v-if="entryScore > 0">
+                首次收分，至少累计 <strong>{{ format(entryScore) }} 分</strong>。<br />之后每回合随时可以见好就收。
+            </p>
             <p v-else>首次收分无最低门槛。<br />选择有效计分骰子即可落袋为安。</p>
-        </div>
-        <div class="sidebar-quote">
-            <span>✧</span>
-            <p>运气决定点数<br /><strong>勇气决定下一掷</strong></p>
         </div>
     </aside>
 </template>

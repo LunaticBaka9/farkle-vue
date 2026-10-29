@@ -6,6 +6,9 @@ defineProps({ name: { type: String, default: "dice" }, size: { type: [Number, St
 // 集中维护图标名称与 SVG 路径的映射；模板只需传入语义化 name。
 // 所有路径均基于 24 × 24 的 viewBox 编写，便于统一缩放和描边。
 const paths = {
+    // map：折叠地图轮廓与路线标记，用于冒险模式入口和地图框架。
+    map: "M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6m6-3v15m6-12v15m-1-11 2-2 2 2-2 3-2-3",
+
     // dice：方形骰子轮廓及角落、中心五点，用于品牌和掷骰动作。
     dice: "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2M7 7h.01M17 7h.01M12 12h.01M7 17h.01M17 17h.01",
 

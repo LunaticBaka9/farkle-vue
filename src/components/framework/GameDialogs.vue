@@ -8,7 +8,7 @@
 // computed 提供双向表单桥接，nextTick/watch 用于同步原生 dialog DOM 状态。
 import { computed, nextTick, ref, watch } from "vue";
 import AppIcon from "./AppIcon.vue";
-import { RULES_SOURCE } from "../game/scoring.js";
+import { RULES_SOURCE } from "../../game/scoring.js";
 
 // Props 是只读输入：组件根据 modal 决定展示哪一种弹窗。
 

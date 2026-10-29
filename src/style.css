@@ -28,6 +28,18 @@
         min-width: 320px;
         background: radial-gradient(ellipse at 48% -18%, #28332960, transparent 63%), #101915;
     }
+    html[data-mode="kingdom"],
+    body[data-mode="kingdom"] {
+        background: radial-gradient(ellipse at 48% -18%, #6b4a2560, transparent 63%), #15130e;
+    }
+    html[data-mode="adventure"],
+    body[data-mode="adventure"] {
+        background: radial-gradient(ellipse at 48% -18%, #596d445c, transparent 63%), #111911;
+    }
+    html[data-mode="classic"],
+    body[data-mode="classic"] {
+        background: radial-gradient(ellipse at 48% -18%, #28332960, transparent 63%), #101915;
+    }
     button,
     input,
     select {
@@ -106,8 +118,9 @@
     }
     .game-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 314px;
+        grid-template-columns: 82px minmax(0, 1fr) 314px;
         gap: 28px;
+        align-items: start;
     }
     .game-toolbar {
         display: flex;
@@ -139,6 +152,224 @@
 }
 
 @layer components {
+    .normal-mode {
+        grid-column: 2 / 4;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 314px;
+        column-gap: 28px;
+        row-gap: 8px;
+        align-items: start;
+    }
+    .normal-mode > .page-heading {
+        grid-column: 1 / -1;
+        margin-bottom: 0;
+    }
+
+    .mode-switcher {
+        position: sticky;
+        top: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        min-width: 82px;
+        padding-top: 2px;
+    }
+    .mode-switcher-label {
+        padding: 0 0 7px;
+        text-align: center;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #728171;
+    }
+    .mode-button {
+        min-height: 74px;
+        border: 1px solid #d5e4bf14;
+        border-radius: 10px;
+        background: #1a231dc9;
+        color: #899884;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 4px;
+    }
+    .mode-button:hover {
+        border-color: #c5e99555;
+        color: #d5e3c8;
+        background: #202b22;
+    }
+    .mode-button.active {
+        border-color: #c5e995;
+        background: linear-gradient(145deg, #c5e99522, #c5e99509);
+        color: var(--lime);
+        box-shadow: 0 8px 24px #00000024;
+    }
+    .mode-button-icon {
+        height: 22px;
+        display: grid;
+        place-items: center;
+    }
+    .mode-button-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        line-height: 1;
+    }
+    .mode-button-text strong {
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .mode-button-text small {
+        margin-top: 5px;
+        font-size: 6px;
+        letter-spacing: 0.8px;
+        opacity: 0.72;
+    }
+    .mode-stage {
+        grid-column: 2 / 4;
+        min-height: 620px;
+        border-radius: 14px;
+        overflow: hidden;
+        position: relative;
+    }
+    .mode-stage-header {
+        position: relative;
+        z-index: 2;
+        padding: 42px 44px 30px;
+    }
+    .mode-kicker {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 8px;
+        letter-spacing: 4px;
+        font-weight: 700;
+    }
+    .mode-stage-header h1 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 38px;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+    .mode-stage-header p {
+        font-size: 13px;
+        line-height: 1.8;
+        opacity: 0.78;
+    }
+    .mode-stage--kingdom {
+        color: #e7d7b4;
+        border: 1px solid #9a7a4547;
+        background:
+            linear-gradient(135deg, #19130bd9, transparent 52%),
+            radial-gradient(circle at 75% 25%, #7a54263f, transparent 28%),
+            repeating-linear-gradient(45deg, #2b211366 0 8px, #1b160f66 8px 16px),
+            #211a12;
+    }
+    .site-shell[data-mode="kingdom"] {
+        background:
+            radial-gradient(ellipse at 48% -18%, #6b4a2560, transparent 63%),
+            #15130e;
+    }
+    .kingdom-header {
+        text-shadow: 0 2px 18px #000;
+    }
+    .kingdom-header .mode-kicker {
+        color: #b99b61;
+    }
+    .kingdom-frame {
+        position: absolute;
+        inset: 170px 44px 44px;
+        border: 1px solid #b58a4a42;
+        border-radius: 50% 50% 18px 18px;
+        background: linear-gradient(160deg, #0e0b0799, #33241799);
+        display: grid;
+        place-items: center;
+    }
+    .kingdom-seal {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        border: 1px solid #b99b615f;
+        display: grid;
+        place-items: center;
+        color: #c0a368;
+        background: #171108;
+    }
+    .kingdom-lines {
+        position: absolute;
+        bottom: 32px;
+        display: flex;
+        gap: 10px;
+    }
+    .kingdom-lines i {
+        width: 54px;
+        height: 3px;
+        background: #b99b613f;
+    }
+    .mode-stage--adventure {
+        color: #dce4bd;
+        border: 1px solid #87905d4a;
+        background:
+            linear-gradient(145deg, #26321cdd, transparent 55%),
+            radial-gradient(circle at 30% 75%, #7d8a4e38, transparent 26%),
+            repeating-linear-gradient(0deg, #6c754018 0 1px, transparent 1px 24px),
+            #263023;
+    }
+    .site-shell[data-mode="adventure"] {
+        background:
+            radial-gradient(ellipse at 48% -18%, #596d445c, transparent 63%),
+            #111911;
+    }
+    .adventure-header .mode-kicker {
+        color: #abb77d;
+    }
+    .adventure-map {
+        position: absolute;
+        inset: 175px 42px 42px;
+        border-radius: 9px;
+        border: 1px solid #9da66e42;
+        background:
+            radial-gradient(ellipse at 30% 40%, #b0a86b18 0 8%, transparent 9%),
+            radial-gradient(ellipse at 72% 65%, #75845422 0 12%, transparent 13%);
+    }
+    .map-compass {
+        position: absolute;
+        right: 24px;
+        bottom: 20px;
+        color: #a7ad7b66;
+    }
+    .map-route {
+        position: absolute;
+        height: 1px;
+        border-top: 2px dashed #aab28066;
+        transform-origin: left center;
+    }
+    .map-route-a {
+        width: 42%;
+        left: 18%;
+        top: 52%;
+        transform: rotate(-18deg);
+    }
+    .map-route-b {
+        width: 31%;
+        left: 57%;
+        top: 42%;
+        transform: rotate(28deg);
+    }
+    .map-node {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 3px solid #b2b77b;
+        background: #38422e;
+        box-shadow: 0 0 0 5px #aeb47a18;
+    }
+    .map-node-a { left: 16%; top: 48%; }
+    .map-node-b { left: 56%; top: 34%; }
+    .map-node-c { right: 18%; bottom: 24%; }
+
     /* 品牌区、标题和玩家分数卡片。 */
     .brand {
         display: inline-flex;
@@ -1565,7 +1796,11 @@
         }
         .game-layout {
             gap: 30px;
+            grid-template-columns: 82px minmax(0, 1fr) 320px;
+        }
+        .normal-mode {
             grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 30px;
         }
         .game-table {
             padding: 23px 32px 21px;
@@ -1587,6 +1822,10 @@
             padding: 0 36px;
         }
         .game-layout {
+            grid-template-columns: 82px minmax(0, 1fr) 284px;
+            gap: 22px;
+        }
+        .normal-mode {
             grid-template-columns: minmax(0, 1fr) 284px;
             gap: 22px;
         }
@@ -1651,6 +1890,36 @@
         }
         .game-layout {
             grid-template-columns: minmax(0, 1fr);
+        }
+        .normal-mode {
+            grid-column: 1;
+            grid-template-columns: minmax(0, 1fr);
+            row-gap: 12px;
+        }
+        .mode-switcher {
+            position: static;
+            grid-column: 1;
+            width: 100%;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 0;
+        }
+        .mode-switcher-label {
+            display: none;
+        }
+        .mode-button {
+            min-height: 58px;
+            flex-direction: row;
+            gap: 9px;
+        }
+        .mode-button-text {
+            align-items: flex-start;
+        }
+        .mode-stage {
+            grid-column: 1;
+            min-height: 560px;
         }
         .sidebar {
             display: grid;
@@ -1810,6 +2079,45 @@
     @media (max-width: 520px) {
         .site-shell {
             padding: 0 17px;
+        }
+        .mode-switcher {
+            gap: 6px;
+        }
+        .mode-button {
+            min-height: 52px;
+            border-radius: 8px;
+            gap: 6px;
+            padding: 7px 3px;
+        }
+        .mode-button-icon svg {
+            width: 17px;
+            height: 17px;
+        }
+        .mode-button-text strong {
+            font-size: 10px;
+        }
+        .mode-button-text small {
+            font-size: 5px;
+            letter-spacing: 0.5px;
+        }
+        .mode-stage {
+            min-height: 500px;
+            border-radius: 10px;
+        }
+        .mode-stage-header {
+            padding: 30px 24px 24px;
+        }
+        .mode-stage-header h1 {
+            font-size: 30px;
+        }
+        .mode-stage-header p {
+            font-size: 12px;
+        }
+        .kingdom-frame {
+            inset: 145px 24px 24px;
+        }
+        .adventure-map {
+            inset: 145px 24px 24px;
         }
         .site-header {
             height: 72px;

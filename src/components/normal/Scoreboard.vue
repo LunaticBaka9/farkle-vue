@@ -1,6 +1,6 @@
 <!-- 模式切换、新对局入口以及双方玩家总分与进度。 -->
 <script setup>
-import AppIcon from "./AppIcon.vue";
+import AppIcon from "../framework/AppIcon.vue";
 defineProps({ game: Object, targetScore: Number, format: Function, difficultyLabels: Object, progress: Function });
 defineEmits(["selectMode", "openSetup"]);
 </script>

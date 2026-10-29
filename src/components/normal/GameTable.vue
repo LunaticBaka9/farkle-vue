@@ -1,7 +1,7 @@
 <!-- 游戏牌桌、骰子选择、保留区、掷骰与收分操作。 -->
 <script setup>
-import AppIcon from "./AppIcon.vue";
-import Die from "./Die.vue";
+import AppIcon from "../framework/AppIcon.vue";
+import Die from "../framework/Die.vue";
 defineProps({
     game: Object,
     format: Function,

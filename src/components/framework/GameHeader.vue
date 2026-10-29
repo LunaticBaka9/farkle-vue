@@ -10,15 +10,6 @@ defineEmits(["toggleSound", "openRules"]);
         <a class="brand" href="./" aria-label="Farkle 首页">
             <span class="brand-mark"><AppIcon name="dice" :size="27" /></span>farkle<span class="brand-period">.</span>
         </a>
-
-        <a class="brand" href="./" aria-label="Farkle 特殊骰子">
-            <span class="brand-mark"><AppIcon name="dice" :size="27" /></span>Special
-        </a>
-
-        <a class="brand" href="./" aria-label="Farkle 冒险模式">
-            <span class="brand-mark"><AppIcon name="dice" :size="27" /></span>Advanture
-        </a>
-
         <span class="header-motto">A LITTLE LUCK. A LOT OF NERVE.</span>
         <nav aria-label="游戏工具">
             <button
