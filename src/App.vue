@@ -56,12 +56,17 @@ const { format, toggleSound, openSetup, newGame, closeDialog } = farkle;
 </script>
 
 <template>
-    <div class="site-shell" :data-mode="activeMode">
+    <div
+        class="mx-auto max-w-[1440px] px-16 wide:px-[70px] data-[mode=kingdom]:bg-[#15130e] data-[mode=kingdom]:bg-[radial-gradient(ellipse_at_48%_-18%,#6b4a2560,transparent_63%)] data-[mode=adventure]:bg-[#111911] data-[mode=adventure]:bg-[radial-gradient(ellipse_at_48%_-18%,#596d445c,transparent_63%)] max-mid:px-9 max-tab:px-[30px] max-mob:px-[23px] max-nar:px-[17px] max-tiny:px-3"
+        :data-mode="activeMode"
+    >
         <GameHeader :sound="sound" @toggle-sound="toggleSound" @open-rules="modal = 'rules'" />
 
         <!-- 主内容区：标题、对局主栏与计分提示侧栏。 -->
-        <main class="main-content">
-            <div class="game-layout">
+        <main class="pt-[39px] max-mob:pt-[29px]">
+            <div
+                class="grid grid-cols-[82px_minmax(0,1fr)_314px] items-start gap-7 wide:grid-cols-[82px_minmax(0,1fr)_320px] wide:gap-[30px] max-mid:grid-cols-[82px_minmax(0,1fr)_284px] max-mid:gap-[22px] max-tab:grid-cols-1"
+            >
                 <ModeSwitcher v-model="activeMode" />
                 <component :is="activeModeComponent" />
             </div>
@@ -71,8 +76,18 @@ const { format, toggleSound, openSetup, newGame, closeDialog } = farkle;
         <GameFooter :target-score="targetScore" :format="format" />
 
         <!-- Toast 只提供短暂反馈，不修改对局状态。 -->
-        <Transition name="toast">
-            <div v-if="toast" class="toast-message" role="status"><AppIcon name="check" :size="15" />{{ toast }}</div>
+        <Transition
+            enter-active-class="transition-[opacity,bottom] duration-200"
+            enter-from-class="!bottom-5 opacity-0"
+            leave-active-class="transition-[opacity,bottom] duration-200"
+            leave-to-class="!bottom-5 opacity-0"
+        >
+            <div
+                v-if="toast"
+                class="fixed bottom-7 left-1/2 z-10 flex w-max max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-[9px] rounded-[9px] border border-[#c5e99555] bg-[#253223f5] px-[19px] py-[13px] text-[clamp(12px,1vw,13px)] leading-[1.7] text-[#d4e8bb] max-mob:text-[12px] shadow-[0_8px_30px_#0005]"
+                role="status"
+                ><AppIcon name="check" :size="15" />{{ toast }}</div
+            >
         </Transition>
 
         <!-- 弹窗统一接收 modal 状态，并通过事件回传关闭或创建对局。 -->

@@ -46,10 +46,12 @@ const {
 </script>
 
 <template>
-    <div class="normal-mode">
+    <div
+        class="col-start-2 col-end-4 grid grid-cols-[minmax(0,1fr)_314px] items-start gap-x-7 gap-y-2 wide:grid-cols-[minmax(0,1fr)_320px] wide:gap-[30px] max-mid:grid-cols-[minmax(0,1fr)_284px] max-mid:gap-[22px] max-tab:col-start-1 max-tab:col-end-auto max-tab:grid-cols-1 max-tab:gap-y-3"
+    >
         <PageHeading :target-score="targetScore" :format="format" />
 
-        <section class="main-column" aria-label="Farkle 对局">
+        <section aria-label="Farkle 对局">
             <Scoreboard
                 :game="game"
                 :target-score="targetScore"
