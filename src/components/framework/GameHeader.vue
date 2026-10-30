@@ -1,14 +1,13 @@
 <!-- 页面顶部品牌、音效开关和玩法规则入口。 -->
 <script setup>
 import AppIcon from "./AppIcon.vue";
+// sound 表示顶部音效开关的当前状态；toggleSound/openRules 由父组件统一处理对应动作。
 defineProps({ sound: Boolean });
 defineEmits(["toggleSound", "openRules"]);
 </script>
 
 <template>
-    <header
-        class="flex h-[94px] items-center justify-between border-b border-line max-mob:h-20 max-nar:h-[72px]"
-    >
+    <header class="flex h-[94px] items-center justify-between border-b border-line max-mob:h-20 max-nar:h-[72px]">
         <a
             class="inline-flex items-center text-[32px] font-extrabold tracking-[-1.6px] max-nar:text-[29px]"
             href="./"
@@ -19,7 +18,8 @@ defineEmits(["toggleSound", "openRules"]);
                 ><AppIcon class="max-nar:size-[23px]" name="dice" :size="27" /></span
             >farkle<span class="text-lime">.</span>
         </a>
-        <span class="ml-[45px] text-[clamp(9px,0.8vw,11px)] font-medium tracking-[2.6px] text-[#718075] max-mid:ml-0 max-mid:text-[8px] max-mob:hidden"
+        <span
+            class="ml-[45px] text-[clamp(9px,0.8vw,11px)] font-medium tracking-[2.6px] text-[#718075] max-mid:ml-0 max-mid:text-[8px] max-mob:hidden"
             >A LITTLE LUCK. A LOT OF NERVE.</span
         >
         <nav class="flex items-center gap-[21px] max-nar:gap-[14px]" aria-label="游戏工具">
@@ -35,11 +35,11 @@ defineEmits(["toggleSound", "openRules"]);
                 ></button
             ><span class="h-[17px] w-px bg-[#ffffff17]"></span>
             <button
-                class="inline-flex items-center gap-2 border-0 bg-transparent py-[7px] text-[clamp(12px,1vw,13px)] text-[#a0ac9f] hover:text-lime max-mob:text-[12px] max-nar:min-h-[38px] max-nar:gap-1.5"
+                class="inline-flex items-center gap-2 border-0 bg-transparent py-[7px] text-[clamp(12px,1vw,13px)] text-[#a0ac9f] hover:text-lime max-mob:text-[12px] max-nar:min-h-9.5 max-nar:gap-1.5"
                 @click="$emit('openRules')"
             >
-                <AppIcon name="book" :size="17" />玩法规则</button
-            >
+                <AppIcon name="book" :size="17" />玩法规则
+            </button>
         </nav>
     </header>
 </template>

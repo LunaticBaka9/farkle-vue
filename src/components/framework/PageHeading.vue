@@ -1,6 +1,7 @@
 <!-- 页面主标题、产品标语和当前获胜目标展示。 -->
 <script setup>
 import AppIcon from "./AppIcon.vue";
+// targetScore 展示当前获胜目标；format 提供统一的分数数字格式化函数。
 defineProps({ targetScore: Number, format: Function });
 </script>
 <template>
@@ -13,7 +14,7 @@ defineProps({ targetScore: Number, format: Function });
                 ROLL THE DICE. OWN THE MOMENT.
             </div>
             <h1
-                class="mb-[7px] mt-[10px] text-[clamp(27px,2.65vw,38px)] font-[650] leading-[1.5] tracking-[-0.9px] max-mob:text-[30px] max-nar:mt-3 max-nar:whitespace-nowrap max-nar:text-[26px] max-nar:tracking-[-0.7px] max-tiny:text-[29px]"
+                class="mb-[7px] mt-[10px] text-[clamp(27px,2.65vw,38px)] font-[650] leading-[1.5] tracking-[-0.9px] max-mob:text-[30px] max-nar:mt-3 max-nar:whitespace-nowrap max-nar:text-[26px] max-nar:tracking-[-0.7px] max-tiny:whitespace-normal max-tiny:text-[24px]"
             >
                 再掷一次，<span class="text-[#c6d1be]">好运在手。</span>
             </h1>

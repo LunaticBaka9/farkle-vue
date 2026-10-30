@@ -1,6 +1,7 @@
 <!-- 模式切换、新对局入口以及双方玩家总分与进度。 -->
 <script setup>
 import AppIcon from "../framework/AppIcon.vue";
+// game/targetScore 提供当前对局信息；difficultyLabels/progress 负责显示 AI 难度和进度。
 defineProps({ game: Object, targetScore: Number, format: Function, difficultyLabels: Object, progress: Function });
 defineEmits(["selectMode", "openSetup"]);
 </script>

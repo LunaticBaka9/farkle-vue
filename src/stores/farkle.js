@@ -15,6 +15,7 @@ import {
     isValidEntryScore,
 } from "../game/engine.js";
 import { ENTRY_SCORE, TARGET_SCORE, farkleProbability, scoringOptions } from "../game/scoring.js";
+import diceFallSound from "@/assets/sounds/the-dice-fell.mp3";
 
 // localStorage 使用固定版本键；恢复时会对关键字段执行结构校验。
 export const STORAGE_KEY = "farkle.table.v1";
@@ -89,21 +90,30 @@ function restore() {
  * 返回值中的 computed/ref 可直接绑定到页面组件。
  */
 export const useFarkleStore = defineStore("farkle", () => {
+    // restored 保存 localStorage 中校验通过的旧对局；恢复失败时使用 createGame() 创建全新对局。
     const restored = restore();
+    // game 是对局唯一状态源，shallowRef 只在整个对象替换时触发响应式更新。
     const game = shallowRef(restored || createGame());
+    // selected 保存当前玩家选中的骰子 ID；rollingFaces 只用于掷骰动画期间循环展示随机点数。
     const selected = ref([]);
     const rolling = ref(false);
     const rollingFaces = ref([]);
-    const sound = ref(false);
+    // sound 控制页面反馈音效和投掷音效的总开关；默认开启，用户切换后仅影响当前运行时状态。
+    const sound = ref(true);
+    // modal 保存当前弹窗类型；null 表示关闭弹窗。
     const modal = ref(null);
+    // toast 保存短时提示文案，空字符串表示不显示提示。
     const toast = ref("");
+    // setup* 保存新对局表单的草稿值，提交前不会直接写入当前 game。
     const setupMode = ref(game.value.mode);
     const setupDifficulty = ref(game.value.difficulty);
     const setupTargetScore = ref(game.value.targetScore);
     const setupEntryScore = ref(game.value.entryScore ?? ENTRY_SCORE);
     const setupNames = ref(["", ""]);
+    // aiChoice 保存 AI 当前决策的界面提示文案。
     const aiChoice = ref("");
-    let aiTimer, rollTimer, rollInterval, toastTimer, audioContext;
+    // 各类定时器负责 AI 流程、掷骰动画和 Toast；音频变量缓存 Web Audio 或 MP3 播放实例。
+    let aiTimer, rollTimer, rollInterval, toastTimer, audioContext, diceFallAudio;
 
     // 以下 computed 都是由当前 game 状态派生，不保存可互相漂移的 UI 副本。
     const isAi = computed(() => game.value.mode === "ai" && game.value.active === 1);
@@ -126,12 +136,10 @@ export const useFarkleStore = defineStore("farkle", () => {
         game.value.phase === "ready" ? 6 : game.value.dice.length - selected.value.length || 6,
     );
     const nextRisk = computed(() => Math.round(farkleProbability(nextDiceCount.value) * 100));
-    const entryMissing = computed(
-        () => {
-            const entryScore = game.value.entryScore ?? ENTRY_SCORE;
-            return game.value.players[game.value.active].score === 0 && entryScore > 0 && pendingScore.value < entryScore;
-        },
-    );
+    const entryMissing = computed(() => {
+        const entryScore = game.value.entryScore ?? ENTRY_SCORE;
+        return game.value.players[game.value.active].score === 0 && entryScore > 0 && pendingScore.value < entryScore;
+    });
     const showHandoff = computed(() => ["farkle", "handoff"].includes(game.value.phase));
     const progress = (score) => `${Math.min((score / targetScore.value) * 100, 100)}%`;
     const difficultyLabels = { cautious: "稳健型", balanced: "均衡型", bold: "冒险型" };
@@ -168,9 +176,22 @@ export const useFarkleStore = defineStore("farkle", () => {
             toast.value = "";
         }, 3200);
     }
+
     // 通过 Web Audio API 播放可选音效，浏览器不支持或用户关闭时静默失败。
     function play(type) {
         if (!sound.value) return;
+        if (type === "roll") {
+            try {
+                diceFallAudio ||= new Audio(diceFallSound);
+                diceFallAudio.pause();
+                diceFallAudio.currentTime = 0;
+                diceFallAudio.volume = 0.75;
+                void diceFallAudio.play().catch(() => {});
+            } catch {
+                /* Audio is optional. */
+            }
+            return;
+        }
         try {
             audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
             audioContext.resume().catch(() => {});
@@ -343,6 +364,7 @@ export const useFarkleStore = defineStore("farkle", () => {
         clearTimeout(rollTimer);
         clearInterval(rollInterval);
         clearTimeout(toastTimer);
+        diceFallAudio?.pause();
         audioContext?.close();
     });
 

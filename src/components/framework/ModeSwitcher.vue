@@ -10,6 +10,7 @@ defineProps({
 
 defineEmits(["update:modelValue"]);
 
+// modes 是页面模式导航的完整配置：id 用于状态和主题切换，label/subtitle/icon 控制视觉展示。
 const modes = [
     { id: "classic", label: "普通", subtitle: "CLASSIC", icon: "dice" },
     { id: "kingdom", label: "天国", subtitle: "KINGDOM", icon: "shield" },

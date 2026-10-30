@@ -60,6 +60,7 @@ export function hasScore(values) {
     return counts.some((n) => n >= 3) || (values.length === 6 && counts.filter((n) => n === 2).length === 3);
 }
 
+// riskCache 缓存各骰子数量的爆骰概率，避免对相同数量重复枚举所有骰面组合。
 const riskCache = new Map();
 /**
  * 精确计算掷出指定数量骰子后完全没有得分组合的概率。

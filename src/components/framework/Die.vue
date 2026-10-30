@@ -1,6 +1,7 @@
 <!-- 单颗骰子的外观、点数、选中状态与交互按钮。 -->
 <script setup>
 import AppIcon from "./AppIcon.vue";
+// props 同时描述普通尺寸、迷你尺寸、动画状态、禁用状态和装饰状态。
 defineProps({
     value: { type: Number, default: 1 },
     selected: Boolean,

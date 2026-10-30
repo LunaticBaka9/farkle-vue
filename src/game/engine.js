@@ -19,21 +19,27 @@ export function createGame(mode = "ai", difficulty = "balanced", targetScore = T
     if (!isValidTargetScore(targetScore)) throw new RangeError("获胜分数必须为 1,000–100,000 之间的 500 倍数");
     if (!isValidEntryScore(entryScore)) throw new RangeError("首次收分门槛必须为 0–10,000 之间的 50 倍数");
     return {
+        // version 标记存档结构版本；mode 与 difficulty 分别决定对战方式和 AI 风格。
         version: 1,
         mode,
         difficulty,
+        // targetScore 控制获胜目标；entryScore 约束玩家首次收分的最低累计得分。
         targetScore,
         entryScore,
+        // players 保存双方名称和总分；active 指向当前行动玩家的数组下标。
         players: [
             { name: mode === "ai" ? "你" : "玩家一", score: 0 },
             { name: mode === "ai" ? "NOVA" : "玩家二", score: 0 },
         ],
+        // active/turn 描述当前行动者和轮次；turnScore 是尚未收入总分的回合累计分。
         active: 0,
         turn: 1,
         turnScore: 0,
+        // rollNumber 为掷骰序号；dice 保存本次骰面，kept 保存已保留组合记录。
         rollNumber: 0,
         dice: [],
         kept: [],
+        // phase 描述对局阶段；finalStarter/winner 分别记录最终回合发起者和比赛结果。
         phase: "ready",
         finalStarter: null,
         winner: null,

@@ -8,6 +8,7 @@ import ActivityList from "../framework/ActivityList.vue";
 import ScoringSidebar from "../framework/ScoringSidebar.vue";
 
 const farkle = useFarkleStore();
+// refs 保持 store 中的对局、动画和表单状态响应式；actions 是直接调用的 store 方法集合。
 const {
     game,
     selected,
