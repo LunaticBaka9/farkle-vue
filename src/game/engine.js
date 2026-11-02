@@ -1,5 +1,5 @@
-// 对局引擎模块：实现不可变对局状态转换、回合规则和 AI 决策。
-// 每个公开动作接收旧 game 对象并返回新的 game 对象，调用方无需手动深拷贝。
+// 纯对局引擎：由 stores/farkle.js 的玩家动作和 game/aiAutomation.js 的 AI 流程调用。
+// 公开动作接收旧 game 并返回新 game；本层不读取 Vue 状态或浏览器存储。
 import { ENTRY_SCORE, TARGET_SCORE, hasScore, scoreDice, scoringOptions, farkleProbability } from "./scoring.js";
 
 /** 校验获胜分数是否安全且符合 500 分间隔。 */

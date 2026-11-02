@@ -1,4 +1,5 @@
 <script setup>
+// 常规模式由 App.vue 动态挂载；本层把 Pinia 对局状态传给牌桌、记分板和侧栏。
 import { storeToRefs } from "pinia";
 import { useFarkleStore } from "../../stores/farkle.js";
 import PageHeading from "../framework/PageHeading.vue";
@@ -48,8 +49,7 @@ const {
 
 <template>
     <div
-        class="col-start-2 col-end-4 grid grid-cols-[minmax(0,1fr)_314px] items-start gap-x-7 gap-y-2 wide:grid-cols-[minmax(0,1fr)_320px] wide:gap-[30px] max-mid:grid-cols-[minmax(0,1fr)_284px] max-mid:gap-[22px] max-tab:col-start-1 max-tab:col-end-auto max-tab:grid-cols-1 max-tab:gap-y-3"
-    >
+        class="col-start-2 col-end-4 grid grid-cols-[minmax(0,1fr)_314px] items-start gap-x-7 gap-y-2 wide:grid-cols-[minmax(0,1fr)_320px] wide:gap-[30px] max-mid:grid-cols-[minmax(0,1fr)_284px] max-mid:gap-[22px] max-tab:col-start-1 max-tab:col-end-auto max-tab:grid-cols-1 max-tab:gap-y-3">
         <PageHeading :target-score="targetScore" :format="format" />
 
         <section aria-label="Farkle 对局">
@@ -60,8 +60,7 @@ const {
                 :difficulty-labels="difficultyLabels"
                 :progress="progress"
                 @select-mode="selectMode"
-                @open-setup="openSetup()"
-            />
+                @open-setup="openSetup()" />
 
             <GameTable
                 :game="game"
@@ -90,8 +89,7 @@ const {
                 @next-turn="nextTurn"
                 @open-setup="openSetup()"
                 @open-winner="modal = 'winner'"
-                @open-activity="modal = 'activity'"
-            />
+                @open-activity="modal = 'activity'" />
 
             <ActivityList :history="game.history" :format="format" @open-details="modal = 'activity'" />
         </section>

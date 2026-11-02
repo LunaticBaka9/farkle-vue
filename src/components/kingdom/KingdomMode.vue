@@ -1,45 +1,18 @@
 <script setup>
-import { onBeforeUnmount, ref } from "vue";
+import { onBeforeUnmount, ref, watch } from "vue";
 import KingdomHeader from "./KingdomHeader.vue";
 import KingdomOpponents from "./KingdomOpponents.vue";
 import KingdomShop from "./KingdomShop.vue";
+// 商品和挑战参数的唯一来源是 game/items.js；存档适配层负责本地读写与校验。
+import { DEFAULT_KINGDOM_STATE, KINGDOM_OPPONENTS, KINGDOM_SHOP_ITEMS } from "../../game/items.js";
+import { restoreKingdomState, saveKingdomState as persistKingdomState } from "../../game/kingdomStorage.js";
 
 // 天国模式的持久化数据、对手事务和商店事务集中在父组件维护。
-const emit = defineEmits(["openBackpack", "openDiceList", "challengeOpponent"]);
-const KINGDOM_STORAGE_KEY = "farkle.kingdom.v1";
-
-const opponents = [
-    { id: "squire", name: "学徒骑士", title: "初级挑战者", difficulty: "cautious", wager: 50, target: 5000, icon: "shield" },
-    { id: "archer", name: "林间射手", title: "精准控局者", difficulty: "balanced", wager: 100, target: 7500, icon: "user" },
-    { id: "alchemist", name: "宫廷炼金师", title: "善用风险的棋手", difficulty: "bold", wager: 180, target: 10000, icon: "spark" },
-    { id: "knight", name: "黑甲骑士", title: "皇家精英", difficulty: "balanced", wager: 260, target: 10000, icon: "shield" },
-    { id: "dragon", name: "龙堡守卫", title: "传说级对手", difficulty: "bold", wager: 400, target: 15000, icon: "flame" },
-];
-
-const shopItems = [
-    { id: "dice-royal", category: "dice", name: "皇家骰子", detail: "金色纹章，庄重典雅", price: 320, icon: "dice" },
-    { id: "dice-knight", category: "dice", name: "骑士骰子", detail: "银灰盔甲，坚毅可靠", price: 480, icon: "shield" },
-    { id: "dice-lucky", category: "dice", name: "幸运骰子", detail: "低调闪光，为关键一掷增添运气", price: 650, icon: "spark" },
-    { id: "item-cross", category: "item", name: "皇家十字印记", detail: "稀有护符，可用于天国对局", price: 220, icon: "shield" },
-    { id: "item-bag", category: "item", name: "古堡金币袋", detail: "古旧皮革，便于携带金币", price: 180, icon: "bank" },
-    { id: "item-spark", category: "item", name: "幸运火花", detail: "等待下一次奇遇的神秘道具", price: 360, icon: "flame" },
-];
-
-function restoreKingdomState() {
-    try {
-        const saved = JSON.parse(localStorage.getItem(KINGDOM_STORAGE_KEY));
-        const validCoins = Number.isInteger(saved?.coins) && saved.coins >= 0 ? saved.coins : 1250;
-        return {
-            coins: validCoins,
-            ownedIds: Array.isArray(saved?.ownedIds)
-                ? saved.ownedIds.filter((id) => shopItems.some((item) => item.id === id))
-                : ["item-cross", "item-bag", "dice-royal"],
-        };
-    } catch {
-        return { coins: 1250, ownedIds: ["item-cross", "item-bag", "dice-royal"] };
-    }
-}
-
+const props = defineProps({ resetToken: { type: Number, default: 0 } });
+const emit = defineEmits(["openBackpack", "openDiceList", "challengeOpponent", "resetPlayerState"]);
+// 天国模式初始化从存档模块恢复状态，静态目录从 game/items.js 注入子视图。
+const opponents = KINGDOM_OPPONENTS;
+const shopItems = KINGDOM_SHOP_ITEMS;
 const savedState = restoreKingdomState();
 const coins = ref(savedState.coins);
 const ownedIds = ref(savedState.ownedIds);
@@ -47,12 +20,23 @@ const notice = ref("");
 let noticeTimer;
 
 function saveKingdomState() {
-    try {
-        localStorage.setItem(KINGDOM_STORAGE_KEY, JSON.stringify({ coins: coins.value, ownedIds: ownedIds.value }));
-    } catch {
-        // localStorage 不可用时仍允许当前页面内的挑战和购买。
-    }
+    // 购买、挑战与重置都从这里写回，组件继续以响应式 refs 作为当前页状态源。
+    persistKingdomState({ coins: coins.value, ownedIds: ownedIds.value });
 }
+
+function resetKingdomState() {
+    coins.value = DEFAULT_KINGDOM_STATE.coins;
+    ownedIds.value = [...DEFAULT_KINGDOM_STATE.ownedIds];
+    saveKingdomState();
+    showNotice("天国玩家状态已恢复初始设置。");
+}
+
+watch(
+    () => props.resetToken,
+    (token, previousToken) => {
+        if (token !== previousToken) resetKingdomState();
+    },
+);
 
 function showNotice(message) {
     clearTimeout(noticeTimer);
@@ -70,6 +54,7 @@ function challengeOpponent(opponent) {
     coins.value -= opponent.wager;
     saveKingdomState();
     showNotice(`已支付 ${opponent.wager} 金币，正在挑战 ${opponent.name}。`);
+    // 挑战卡发出 challenge 后由根页面接管模式切换和对战对象。
     emit("challengeOpponent", opponent);
 }
 
@@ -97,6 +82,7 @@ onBeforeUnmount(() => clearTimeout(noticeTimer));
             :coins="coins"
             @open-backpack="emit('openBackpack')"
             @open-dice-list="emit('openDiceList')"
+            @reset-player-state="emit('resetPlayerState')"
         />
 
         <div class="mt-[24px] grid grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] gap-[18px] max-tab:mt-[24px] max-mob:grid-cols-1">

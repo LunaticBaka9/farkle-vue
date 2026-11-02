@@ -21,8 +21,7 @@ const modes = [
 <template>
     <nav
         class="sticky top-[18px] flex min-w-[82px] flex-col gap-[7px] pt-0.5 max-tab:static max-tab:grid max-tab:w-full max-tab:min-w-0 max-tab:grid-cols-3 max-tab:gap-2 max-tab:p-0 max-nar:gap-1.5"
-        aria-label="游戏模式"
-    >
+        aria-label="游戏模式">
         <span class="pb-[7px] text-center text-[7px] font-bold tracking-[2px] text-[#728171] max-tab:hidden">MODE</span>
         <button
             v-for="mode in modes"
@@ -36,16 +35,16 @@ const modes = [
             "
             :aria-current="modelValue === mode.id ? 'page' : undefined"
             :aria-label="`${mode.label}模式`"
-            @click="$emit('update:modelValue', mode.id)"
-        >
+            @click="$emit('update:modelValue', mode.id)">
             <span class="grid h-[22px] place-items-center"
                 ><AppIcon class="max-nar:size-[17px]" :name="mode.icon" :size="20"
             /></span>
             <span class="flex flex-col items-center leading-none max-tab:items-start">
                 <strong class="text-[11px] font-semibold max-nar:text-[10px]">{{ mode.label }}</strong>
-                <small class="mt-[5px] text-[6px] tracking-[0.8px] opacity-[0.72] max-nar:text-[5px] max-nar:tracking-[0.5px]">{{
-                    mode.subtitle
-                }}</small>
+                <small
+                    class="mt-[5px] text-[6px] tracking-[0.8px] opacity-[0.72] max-nar:text-[5px] max-nar:tracking-[0.5px]"
+                    >{{ mode.subtitle }}</small
+                >
             </span>
         </button>
     </nav>

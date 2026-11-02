@@ -82,8 +82,7 @@ const paths = {
         :stroke-width="name === 'dice' ? 2.2 : 1.6"
         stroke-linecap="round"
         stroke-linejoin="round"
-        aria-hidden="true"
-    >
+        aria-hidden="true">
         <path :d="paths[name] || paths.dice" />
     </svg>
 </template>

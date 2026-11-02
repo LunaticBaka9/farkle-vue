@@ -5,8 +5,7 @@ defineProps({ targetScore: Number, format: Function });
 </script>
 <template>
     <footer
-        class="mt-9.5 flex items-center justify-between gap-5 border-t border-line pb-7 pt-6 max-tab:mt-7.5 max-nar:mt-6 max-nar:gap-3 max-nar:py-5.25"
-    >
+        class="mt-9.5 flex items-center justify-between gap-5 border-t border-line pb-7 pt-6 max-tab:mt-7.5 max-nar:mt-6 max-nar:gap-3 max-nar:py-5.25">
         <span class="text-[18px] font-bold tracking-[-0.7px] text-[#a3b293] max-nar:text-[17px]"
             >farkle
             <span class="text-[#bad18e]">.</span>

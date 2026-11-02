@@ -1,4 +1,4 @@
-// 计分规则与概率工具模块。
+// 计分规则与概率工具：由 game/engine.js 和 stores/farkle.js 调用。
 // 本模块只负责纯计算，不读取或修改 Vue 响应式状态。
 // PlayMonster Farkle rules. Combinations must come from the same roll.
 /** 默认获胜分数。 */

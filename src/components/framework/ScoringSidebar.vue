@@ -10,15 +10,12 @@ defineEmits(["openRules"]);
 <template>
     <aside
         class="flex flex-col gap-4.5 max-tab:mt-3 max-tab:grid max-tab:grid-cols-2 max-tab:grid-rows-[auto_1fr] max-tab:gap-5 max-nar:mt-2.25 max-nar:flex max-nar:gap-4"
-        aria-label="计分与玩法提示"
-    >
+        aria-label="计分与玩法提示">
         <section
-            class="overflow-hidden rounded-[10px] border border-[#d5e4bf17] bg-[linear-gradient(120deg,#202a21,#1a231d)] px-5.5 pt-5.75 max-tab:row-span-3 max-mid:px-4.75 max-nar:px-5.25 max-nar:pt-5.5"
-        >
+            class="overflow-hidden rounded-[10px] border border-[#d5e4bf17] bg-[linear-gradient(120deg,#202a21,#1a231d)] px-5.5 pt-5.75 max-tab:row-span-3 max-mid:px-4.75 max-nar:px-5.25 max-nar:pt-5.5">
             <div class="flex items-center justify-between gap-2.5">
                 <h2
-                    class="flex items-center gap-2.25 text-[clamp(14px,1.15vw,16px)] font-medium max-mob:text-[14px] max-nar:gap-2"
-                >
+                    class="flex items-center gap-2.25 text-[clamp(14px,1.15vw,16px)] font-medium max-mob:text-[14px] max-nar:gap-2">
                     <AppIcon name="dice" :size="17" />计分速查
                 </h2>
                 <span
@@ -27,13 +24,11 @@ defineEmits(["openRules"]);
                 >
             </div>
             <p
-                class="mb-4.25 mt-3.25 text-[clamp(11px,0.95vw,12px)] leading-[1.7] text-[#819178] max-mob:text-[12px] max-nar:mb-3.75"
-            >
+                class="mb-4.25 mt-3.25 text-[clamp(11px,0.95vw,12px)] leading-[1.7] text-[#819178] max-mob:text-[12px] max-nar:mb-3.75">
                 记住这些组合，让每一掷更有把握。
             </p>
             <div
-                class="[&>div]:flex [&>div]:items-center [&>div]:gap-2.75 [&>div]:py-2.25 [&>div]:text-[clamp(12px,1vw,13px)] [&>div]:text-[#c4cdbb] max-mob:[&>div]:text-[12px] max-nar:[&>div]:py-2.5"
-            >
+                class="[&>div]:flex [&>div]:items-center [&>div]:gap-2.75 [&>div]:py-2.25 [&>div]:text-[clamp(12px,1vw,13px)] [&>div]:text-[#c4cdbb] max-mob:[&>div]:text-[12px] max-nar:[&>div]:py-2.5">
                 <div>
                     <Die :value="1" decorative small /><span>单个 1</span
                     ><strong
@@ -57,8 +52,7 @@ defineEmits(["openRules"]);
             </div>
             <div class="mb-2.25 mt-3.25 h-px bg-[#cbdcaa14]"></div>
             <div
-                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9"
-            >
+                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9">
                 <span>三个 1</span
                 ><strong class="whitespace-nowrap font-numeric text-[12px] font-medium text-[#d2dfc4]"
                     >300<small
@@ -68,16 +62,14 @@ defineEmits(["openRules"]);
                 >
             </div>
             <div
-                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9"
-            >
+                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9">
                 <span>三个 2 — 6</span
                 ><strong class="whitespace-nowrap font-numeric text-[12px] font-medium text-[#d2dfc4]"
                     >点数 × 100</strong
                 >
             </div>
             <div
-                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9"
-            >
+                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9">
                 <span>四 / 五 / 六同</span
                 ><strong
                     class="whitespace-nowrap font-numeric text-[10px] font-medium text-[#d2dfc4] max-mid:text-[9px] max-tab:text-[11px]"
@@ -86,8 +78,7 @@ defineEmits(["openRules"]);
             </div>
             <div class="mb-2.25 mt-3.25 h-px bg-[#cbdcaa14]"></div>
             <div
-                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9"
-            >
+                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9">
                 <span>1–6 顺子</span
                 ><strong class="whitespace-nowrap font-numeric text-[12px] font-medium text-[#d2dfc4]"
                     >1,500<small
@@ -97,8 +88,7 @@ defineEmits(["openRules"]);
                 >
             </div>
             <div
-                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9"
-            >
+                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9">
                 <span
                     >三对<span
                         class="ml-1.5 font-numeric text-[clamp(10px,0.85vw,11px)] text-[#77886d] max-mob:hidden max-mob:text-[11px] max-nar:inline"
@@ -112,8 +102,7 @@ defineEmits(["openRules"]);
                 >
             </div>
             <div
-                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9"
-            >
+                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9">
                 <span>四同 + 一对</span
                 ><strong class="whitespace-nowrap font-numeric text-[12px] font-medium text-[#d2dfc4]"
                     >1,500<small
@@ -123,8 +112,7 @@ defineEmits(["openRules"]);
                 >
             </div>
             <div
-                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9"
-            >
+                class="flex min-h-8.75 items-center justify-between gap-2 text-[clamp(12px,1vw,13px)] text-[#b7c3ac] max-mob:text-[12px] max-nar:min-h-9">
                 <span>两组三同</span
                 ><strong class="whitespace-nowrap font-numeric text-[12px] font-medium text-[#d2dfc4]"
                     >2,500<small
@@ -135,14 +123,12 @@ defineEmits(["openRules"]);
             </div>
             <button
                 class="-mx-5.5 mt-5.25 flex w-[calc(100%+44px)] items-center justify-between border-0 border-t border-[#cbdcaa14] bg-[#c5e99503] px-5.5 py-4 text-[clamp(10px,0.85vw,11px)] text-[#b5cd98] hover:bg-[#c5e9950a] hover:text-[#d8edbd] max-mid:-mx-4.75 max-mid:w-[calc(100%+38px)] max-mid:px-4.75 max-mob:text-[11px] max-nar:-mx-5.25 max-nar:w-[calc(100%+42px)] max-nar:px-5.25"
-                @click="$emit('openRules')"
-            >
+                @click="$emit('openRules')">
                 查看完整规则与示例<AppIcon name="diagonal" :size="15" />
             </button>
         </section>
         <section
-            class="flex items-start gap-3 rounded-[10px] border border-[#b6b87c39] bg-[linear-gradient(110deg,#30352280,#262f2080)] px-4.75 py-5.25 max-tab:self-start max-mob:gap-2.25 max-mob:px-3.75 max-mob:py-5 max-nar:w-full max-nar:gap-3.25 max-nar:p-5.25"
-        >
+            class="flex items-start gap-3 rounded-[10px] border border-[#b6b87c39] bg-[linear-gradient(110deg,#30352280,#262f2080)] px-4.75 py-5.25 max-tab:self-start max-mob:gap-2.25 max-mob:px-3.75 max-mob:py-5 max-nar:w-full max-nar:gap-3.25 max-nar:p-5.25">
             <div class="pt-0.75 text-[#d4d394]">
                 <AppIcon class="max-mob:w-5 max-nar:w-6.25" name="flame" :size="25" />
             </div>
@@ -152,8 +138,7 @@ defineEmits(["openRules"]);
                     >WHEN THE DICE ARE HOT</span
                 >
                 <h3
-                    class="mb-2.5 mt-2.25 text-[clamp(14px,1.15vw,16px)] font-medium text-[#dce3c1] max-mob:my-2.5 max-mob:text-[14px]"
-                >
+                    class="mb-2.5 mt-2.25 text-[clamp(14px,1.15vw,16px)] font-medium text-[#dce3c1] max-mob:my-2.5 max-mob:text-[14px]">
                     六骰全中，好运加码。
                 </h3>
                 <p class="text-[clamp(11px,0.95vw,12px)] leading-[1.95] text-[#9ca98a] max-mob:text-[12px]">
@@ -167,8 +152,7 @@ defineEmits(["openRules"]);
             </div>
         </section>
         <div
-            class="mt-px flex items-start gap-2.25 px-2.25 text-[#7f9271] max-tab:self-start max-nar:mb-2 max-nar:mt-0"
-        >
+            class="mt-px flex items-start gap-2.25 px-2.25 text-[#7f9271] max-tab:self-start max-nar:mb-2 max-nar:mt-0">
             <AppIcon class="mt-0.75" name="shield" :size="16" />
             <p class="text-[clamp(11px,0.95vw,12px)] leading-[1.9] max-mob:text-[12px]">
                 <template v-if="entryScore > 0">

@@ -44,27 +44,21 @@ const secondary =
                   ? 'border border-[#c7b47e80] bg-[radial-gradient(ellipse_at_50%_35%,#274d37_0,#203f2e_42%,#1b3427_100%)]'
                   : 'border border-[#52754f7a] bg-[radial-gradient(ellipse_at_50%_35%,#274d37_0,#203f2e_42%,#1b3427_100%)]'
         "
-        aria-label="骰子牌桌"
-    >
+        aria-label="骰子牌桌">
         <div class="absolute left-2 top-2 z-[2] size-[9px] rounded-tl-[2px] border-l border-t border-[#b8d38b66]"></div>
         <div
-            class="absolute right-2 top-2 z-[2] size-[9px] rounded-tr-[2px] border-r border-t border-[#b8d38b66]"
-        ></div>
+            class="absolute right-2 top-2 z-[2] size-[9px] rounded-tr-[2px] border-r border-t border-[#b8d38b66]"></div>
         <div
-            class="absolute bottom-2 left-2 z-[2] size-[9px] rounded-bl-[2px] border-b border-l border-[#b8d38b66]"
-        ></div>
+            class="absolute bottom-2 left-2 z-[2] size-[9px] rounded-bl-[2px] border-b border-l border-[#b8d38b66]"></div>
         <div
-            class="absolute bottom-2 right-2 z-[2] size-[9px] rounded-br-[2px] border-b border-r border-[#b8d38b66]"
-        ></div>
+            class="absolute bottom-2 right-2 z-[2] size-[9px] rounded-br-[2px] border-b border-r border-[#b8d38b66]"></div>
         <!-- 内容层：统一抬到牌桌纹理之上，替代原来的子元素选择器。 -->
         <div class="relative z-[1]">
             <div
-                class="flex items-center justify-between text-[clamp(10px,0.85vw,11px)] tracking-[1.6px] text-[#a5b79b] max-mob:text-[10px] max-nar:tracking-[1px]"
-            >
+                class="flex items-center justify-between text-[clamp(10px,0.85vw,11px)] tracking-[1.6px] text-[#a5b79b] max-mob:text-[10px] max-nar:tracking-[1px]">
                 <span class="flex items-center gap-[7px] max-nar:gap-[5px]"
                     ><span
-                        class="inline-block size-[5px] shrink-0 rounded-full bg-lime shadow-[0_0_9px_#c5e99520] max-nar:size-1"
-                    ></span
+                        class="inline-block size-[5px] shrink-0 rounded-full bg-lime shadow-[0_0_9px_#c5e99520] max-nar:size-1"></span
                     >{{
                         game.finalStarter !== null
                             ? "最后一回合 · FINAL ROUND"
@@ -77,8 +71,7 @@ const secondary =
             </div>
             <div
                 v-if="game.finalStarter !== null && game.phase !== 'finished'"
-                class="-mb-[14px] mt-[15px] flex items-center justify-center gap-1.5 text-center text-[clamp(10px,0.85vw,11px)] leading-[1.6] text-[#e3d6a6] max-mob:text-[10px]"
-            >
+                class="-mb-[14px] mt-[15px] flex items-center justify-center gap-1.5 text-center text-[clamp(10px,0.85vw,11px)] leading-[1.6] text-[#e3d6a6] max-mob:text-[10px]">
                 <AppIcon name="trophy" :size="13" />{{
                     game.players[game.finalStarter].name
                 }}已达目标，对手还有最后一次机会。
@@ -99,8 +92,7 @@ const secondary =
                         game.phase === 'farkle'
                             ? 'py-[5px] text-[47px] font-bold tracking-[1px] text-[#efc198] max-nar:py-[7px] max-nar:text-[41px]'
                             : 'text-[59px] font-medium tracking-[-2px] text-[#f0f3df] max-nar:text-[53px]'
-                    "
-                >
+                    ">
                     {{ game.phase === "farkle" ? "FARKLE!" : format(game.turnScore)
                     }}<span
                         v-if="game.phase !== 'farkle'"
@@ -111,8 +103,7 @@ const secondary =
                 <p
                     class="mt-[9px] min-h-[17px] text-[clamp(12px,1vw,13px)] leading-[1.7] text-[#9bb496] max-mob:text-[12px] max-nar:mt-2 max-nar:min-h-[29px] max-nar:px-[5px] max-nar:leading-[1.8]"
                     role="status"
-                    aria-live="polite"
-                >
+                    aria-live="polite">
                     {{ headline }}
                 </p>
             </div>
@@ -121,8 +112,7 @@ const secondary =
                 :class="{
                     '[&>*]:saturate-[0.7] [&>*[aria-hidden]]:opacity-[0.88]': game.phase === 'ready' || showHandoff,
                     '[&>*]:opacity-[0.65]': game.phase === 'farkle',
-                }"
-            >
+                }">
                 <template v-if="rolling"
                     ><Die
                         v-for="(value, index) in rollingFaces"
@@ -153,21 +143,18 @@ const secondary =
             </div>
             <div
                 class="flex min-h-7 flex-wrap items-center justify-center gap-[10px] text-[clamp(12px,1vw,13px)] max-nar:gap-[7px]"
-                :class="selected.length && !chosenScore ? 'text-[#f3c59f]' : 'text-[#a0b79a]'"
-            >
+                :class="selected.length && !chosenScore ? 'text-[#f3c59f]' : 'text-[#a0b79a]'">
                 <span>{{ selectionText }}</span
                 ><span v-if="chosenScore" class="font-semibold text-[#d1efa5]">+{{ format(chosenScore) }} 分</span
                 ><button
                     v-if="game.phase === 'selecting' && !isAi && !rolling"
                     class="inline-flex items-center gap-1 border-0 border-b border-[#c5df9a40] bg-transparent py-1 text-[clamp(11px,0.95vw,12px)] text-[#c5df9a] hover:text-[#e3ffc1] max-mob:text-[11px]"
-                    @click="$emit('suggest')"
-                >
+                    @click="$emit('suggest')">
                     <AppIcon name="spark" :size="12" />帮我选
                 </button>
             </div>
             <div
-                class="mt-[9px] mb-5 flex min-h-12 items-center gap-3 border-y border-[#c1dd9a14] max-nar:mb-[18px] max-nar:mt-[10px] max-nar:min-h-[45px] max-nar:gap-[9px]"
-            >
+                class="mt-[9px] mb-5 flex min-h-12 items-center gap-3 border-y border-[#c1dd9a14] max-nar:mb-[18px] max-nar:mt-[10px] max-nar:min-h-[45px] max-nar:gap-[9px]">
                 <span
                     class="flex shrink-0 items-center gap-[5px] text-[clamp(10px,0.85vw,11px)] text-[#94aa8b] max-mob:text-[11px] max-nar:gap-1"
                     ><AppIcon name="shield" :size="13" />已保留</span
@@ -198,8 +185,7 @@ const secondary =
             <div v-if="showHandoff" class="flex min-h-[52px] items-center justify-center [&>button]:w-full">
                 <div
                     v-if="game.mode === 'ai'"
-                    class="flex items-center gap-3 text-[clamp(12px,1vw,13px)] text-[#b7c99f] max-mob:text-[12px]"
-                >
+                    class="flex items-center gap-3 text-[clamp(12px,1vw,13px)] text-[#b7c99f] max-mob:text-[12px]">
                     <span
                         class="flex gap-1 [&>i]:size-1 [&>i]:animate-blink [&>i]:rounded-full [&>i]:bg-lime [&>i:nth-child(2)]:[animation-delay:0.2s] [&>i:nth-child(3)]:[animation-delay:0.4s]"
                         ><i></i><i></i><i></i
@@ -222,15 +208,13 @@ const secondary =
                 </button>
                 <button
                     :class="[button, secondary, 'justify-center whitespace-nowrap max-nar:gap-2']"
-                    @click="$emit('openActivity')"
-                >
+                    @click="$emit('openActivity')">
                     查看动态详情<AppIcon name="history" :size="17" />
                 </button>
             </div>
             <div
                 v-else
-                class="grid grid-cols-[1.08fr_1fr] gap-3 max-tab:grid-cols-2 max-nar:grid-cols-[1.05fr_1fr] max-nar:gap-[10px]"
-            >
+                class="grid grid-cols-[1.08fr_1fr] gap-3 max-tab:grid-cols-2 max-nar:grid-cols-[1.05fr_1fr] max-nar:gap-[10px]">
                 <button
                     :class="[
                         button,
@@ -239,8 +223,7 @@ const secondary =
                         '[&>svg:last-child]:ml-auto max-nar:[&>svg:first-child]:w-[18px] max-nar:[&>svg:last-child]:w-[15px]',
                     ]"
                     :disabled="!canRollNow"
-                    @click="$emit('roll')"
-                >
+                    @click="$emit('roll')">
                     <AppIcon name="dice" :size="21" /><span>{{
                         rolling ? "掷骰中…" : isAi ? "NOVA 思考中…" : game.phase === "ready" ? "掷出骰子" : "继续掷骰"
                     }}</span
@@ -260,8 +243,7 @@ const secondary =
                     :title="
                         entryMissing ? `首次收分需在同一回合累计至少 ${format(entryScore)} 分` : '把本回合得分加入总分'
                     "
-                    @click="$emit('bank')"
-                >
+                    @click="$emit('bank')">
                     <AppIcon name="bank" :size="18" /><span>收分 · 结束回合</span
                     ><strong
                         v-if="canBankNow"
@@ -271,8 +253,7 @@ const secondary =
                 </button>
             </div>
             <div
-                class="mt-[18px] flex min-h-[13px] items-center justify-center gap-1.5 text-[clamp(10px,0.85vw,11px)] leading-[1.6] text-[#819d75] max-mob:text-[10px] max-nar:mt-4 max-nar:gap-[5px]"
-            >
+                class="mt-[18px] flex min-h-[13px] items-center justify-center gap-1.5 text-[clamp(10px,0.85vw,11px)] leading-[1.6] text-[#819d75] max-mob:text-[10px] max-nar:mt-4 max-nar:gap-[5px]">
                 <template v-if="validSelection && !showHandoff && !rolling"
                     ><AppIcon name="info" :size="12" /><span>{{
                         entryMissing

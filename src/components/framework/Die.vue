@@ -37,14 +37,12 @@ const pips = { 1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7,
         :aria-label="decorative ? undefined : `${value} 点骰子${selected ? '，已选择' : ''}`"
         :aria-pressed="decorative ? undefined : selected"
         :aria-hidden="decorative ? true : undefined"
-        @click="!decorative && $emit('select')"
-    >
+        @click="!decorative && $emit('select')">
         <span
             v-for="n in 9"
             :key="n"
             class="block size-2 justify-self-center self-center rounded-full bg-[#26372a] shadow-[inset_0_1px_2px_#13251b80] max-mid:size-[7px] max-tab:size-2 max-nar:size-1.5 max-tiny:size-[5px]"
-            :class="pips[value].includes(n) ? 'opacity-100' : 'opacity-0'"
-        ></span>
+            :class="pips[value].includes(n) ? 'opacity-100' : 'opacity-0'"></span>
         <span
             v-if="selected && !small"
             class="absolute -right-2 -top-[9px] grid size-5 place-items-center rounded-full border-2 border-[#305031] bg-[#d1f0a4] text-[#2c4520] max-nar:-right-1.5 max-nar:-top-2 max-nar:size-[17px]"

@@ -9,15 +9,13 @@ defineEmits(["openDetails"]);
     <section class="pt-6.5 max-nar:pt-5.5" aria-label="对局记录">
         <div class="flex items-center justify-between gap-2.5">
             <h2
-                class="flex items-center gap-2.25 text-[clamp(14px,1.15vw,16px)] font-medium max-mob:text-[14px] max-nar:gap-2"
-            >
+                class="flex items-center gap-2.25 text-[clamp(14px,1.15vw,16px)] font-medium max-mob:text-[14px] max-nar:gap-2">
                 <AppIcon class="text-[#adbf98]" name="history" :size="17" />对局动态
             </h2>
             <button
                 class="inline-flex items-center gap-1.25 border-0 bg-transparent py-1 text-[clamp(11px,0.95vw,12px)] tracking-normal text-lime hover:text-[#d8f0b7] max-mob:text-[12px]"
                 type="button"
-                @click="$emit('openDetails')"
-            >
+                @click="$emit('openDetails')">
                 查看详情<AppIcon name="chevron" :size="13" />
             </button>
         </div>
@@ -32,12 +30,10 @@ defineEmits(["openDetails"]);
             <li
                 v-for="(event, index) in history.slice(0, 5)"
                 :key="event.id"
-                class="flex items-center gap-2 text-[clamp(12px,1vw,13px)] text-[#93a28a] max-mob:flex-wrap max-mob:text-[12px] max-nar:gap-1.5"
-            >
+                class="flex items-center gap-2 text-[clamp(12px,1vw,13px)] text-[#93a28a] max-mob:flex-wrap max-mob:text-[12px] max-nar:gap-1.5">
                 <span
                     class="grid size-4.5 shrink-0 place-items-center rounded-full"
-                    :class="event.type === 'bank' ? 'bg-[#c5e99510] text-[#bdda96]' : 'bg-[#c0947315] text-[#d4a783]'"
-                >
+                    :class="event.type === 'bank' ? 'bg-[#c5e99510] text-[#bdda96]' : 'bg-[#c0947315] text-[#d4a783]'">
                     <AppIcon :name="event.type === 'bank' ? 'check' : 'close'" :size="11" />
                 </span>
                 <span class="min-w-0 flex-1 max-mob:min-w-[calc(100%-24px)]">
