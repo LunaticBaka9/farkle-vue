@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-This Vue 3 and Vite browser game has no backend. `src/main.js` starts the app, and `src/App.vue` composes page-level components. `src/components/` groups mode-specific views (`normal/`, `adventure/`, `kingdom/`) and shared UI (`framework/`). `src/composables/` coordinates page workflows, `src/stores/` owns shared Pinia state, and `src/game/` contains scoring, turn rules, persistence, audio, AI automation, and Kingdom data. Keep mode-specific UI beside its mode; use `framework/` for shared views. Global styles are in `src/style.css`, and imported audio is in `src/assets/`. `docs/` is generated Pages output; do not edit build artifacts by hand.
+This Vue 3 and Vite browser game has no backend. `src/main.js` mounts `src/app/App.vue`; `src/app/router/` owns hash routes and route-level guards, and `src/app/composables/` coordinates theme, active session, and switch confirmation. `src/modules/normal/`, `src/modules/kingdom/`, and `src/modules/adventure/` own their views, components, stores, and domain data. `src/shared/` contains only cross-module UI, game rules, session lifecycle, UI store, and utilities; shared code must not import a module. Global styles live in `src/assets/styles/`. `docs/` is generated Pages output; do not edit build artifacts by hand.
 
 ## Development Commands
 
@@ -18,6 +18,10 @@ This Vue 3 and Vite browser game has no backend. `src/main.js` starts the app, a
 Follow nearby Vue SFC and JavaScript ES module patterns: four-space indentation, double quotes, and semicolons. Use PascalCase for Vue components, camelCase for functions and variables, and descriptive lower-case module names such as `persistence.js`. Keep game rules pure where practical, and route shared reactive state through the Pinia store. There is no configured lint or formatter script.
 
 When adding a module or meaningful handler, add a concise Chinese comment stating who calls it and where its inputs or data originate. Keep component data flow explicit through props and emits; avoid directly mutating a parent's state from child views.
+
+- 严格遵守单一职责原则，禁止将 UI/输入输出、业务逻辑、数据存储写在同一个文件或函数中。
+- 每次回答只修改或生成一个单一职责的模块/函数，不要一次性输出包含所有逻辑的巨型文件。
+- 依赖必须通过参数或接口注入，禁止硬编码耦合。
 
 ## Testing
 
