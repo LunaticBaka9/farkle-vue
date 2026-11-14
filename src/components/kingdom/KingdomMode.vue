@@ -3,14 +3,14 @@ import { onBeforeUnmount, ref, watch } from "vue";
 import KingdomHeader from "./KingdomHeader.vue";
 import KingdomOpponents from "./KingdomOpponents.vue";
 import KingdomShop from "./KingdomShop.vue";
-// 商品和挑战参数的唯一来源是 game/items.js；存档适配层负责本地读写与校验。
-import { DEFAULT_KINGDOM_STATE, KINGDOM_OPPONENTS, KINGDOM_SHOP_ITEMS } from "../../game/items.js";
-import { restoreKingdomState, saveKingdomState as persistKingdomState } from "../../game/kingdomStorage.js";
+// 商品和挑战参数的唯一来源是 game/kingdom/items.js；存档适配层负责本地读写与校验。
+import { DEFAULT_KINGDOM_STATE, KINGDOM_OPPONENTS, KINGDOM_SHOP_ITEMS } from "../../game/kingdom/items.js";
+import { restoreKingdomState, saveKingdomState as persistKingdomState } from "../../game/kingdom/kingdomStorage.js";
 
 // 天国模式的持久化数据、对手事务和商店事务集中在父组件维护。
 const props = defineProps({ resetToken: { type: Number, default: 0 } });
 const emit = defineEmits(["openBackpack", "openDiceList", "challengeOpponent", "resetPlayerState"]);
-// 天国模式初始化从存档模块恢复状态，静态目录从 game/items.js 注入子视图。
+// 天国模式初始化从存档模块恢复状态，静态目录从 game/kingdom/items.js 注入子视图。
 const opponents = KINGDOM_OPPONENTS;
 const shopItems = KINGDOM_SHOP_ITEMS;
 const savedState = restoreKingdomState();
@@ -77,7 +77,7 @@ onBeforeUnmount(() => clearTimeout(noticeTimer));
 </script>
 
 <template>
-    <section class="relative col-start-2 col-end-4 max-tab:col-start-1 max-tab:col-end-auto" aria-label="天国模式">
+    <section class="kingdom-mode" aria-label="天国模式">
         <KingdomHeader
             :coins="coins"
             @open-backpack="emit('openBackpack')"
@@ -85,19 +85,64 @@ onBeforeUnmount(() => clearTimeout(noticeTimer));
             @reset-player-state="emit('resetPlayerState')"
         />
 
-        <div class="mt-[24px] grid grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] gap-[18px] max-tab:mt-[24px] max-mob:grid-cols-1">
+        <div class="kingdom-grid">
             <KingdomOpponents :coins="coins" :opponents="opponents" @challenge="challengeOpponent" />
             <KingdomShop :coins="coins" :owned-ids="ownedIds" :shop-items="shopItems" @purchase="purchaseItem" />
         </div>
 
         <Transition name="fade">
-            <div
-                v-if="notice"
-                class="fixed bottom-7 left-1/2 z-30 -translate-x-1/2 rounded-lg border border-[#b99b6170] bg-[#211c12f5] px-[18px] py-[12px] text-[12px] text-[#eddfb4] shadow-[0_10px_30px_#0008]"
-                role="status"
-            >
+            <div v-if="notice" class="kingdom-notice" role="status">
                 {{ notice }}
             </div>
         </Transition>
     </section>
 </template>
+
+<style scoped>
+/* 天国模式容器：占据普通模式主内容的两列宽度。 */
+.kingdom-mode {
+    position: relative;
+    grid-column: 2 / 4;
+}
+
+/* 平板天国容器：单列布局时占满整行。 */
+@media (max-width: 1000px) {
+    .kingdom-mode {
+        grid-column: 1 / -1;
+    }
+}
+
+/* 对手与商店的双栏布局，对手区略宽，卡片按内容高度对齐。 */
+.kingdom-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    align-items: start;
+    gap: 18px;
+    margin-top: 24px;
+}
+
+/* 平板及以下天国双栏：改为单列上下排列，避免商店卡过窄。 */
+@media (max-width: 1000px) {
+    .kingdom-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* 天国操作提示：固定在视口底部的短暂 toast。 */
+.kingdom-notice {
+    position: fixed;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    z-index: 30;
+    padding: 12px 18px;
+    border: 1px solid #b99b6170;
+    border-radius: 8px;
+    background: #211c12f5;
+    color: #eddfb4;
+    font-size: 12px;
+    box-shadow: 0 10px 30px #0008;
+    transform: translateX(-50%);
+    /* 提示条不拦截点击，避免遮挡牌桌或按钮。 */
+    pointer-events: none;
+}
+</style>

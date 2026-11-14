@@ -1,0 +1,211 @@
+/*
+ * 全局基础样式：reset、主题变量、页面底色、焦点/选区与关键帧。
+ * 由 src/assets/styles/index.css 汇总引入；组件外观写在各自 SFC 的 <style scoped> 中。
+ */
+
+/*
+ * 响应式断点约定（组件内直接写 @media，不再使用 Tailwind 前缀）：
+ * wide ≥ 1400px、max-mid ≤ 1180px、max-tab ≤ 1000px、
+ * max-mob ≤ 700px、max-nar ≤ 520px、max-tiny ≤ 374px。
+ * 同一选择器有多档时按 默认 → wide → mid → tab → mob → nar → tiny 书写。
+ */
+
+/* 主题变量：字体、品牌色和三种页面模式共用的基础色。 */
+:root {
+    /* 让浏览器原生控件（滚动条、输入框）使用深色配色。 */
+    color-scheme: dark;
+
+    /* 字体：正文无衬线、装饰标题衬线、数字使用等宽西文字体。 */
+    --font-sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    --font-display: Georgia, "Times New Roman", serif;
+    --font-numeric: "Arial", sans-serif;
+
+    /* 品牌色、正文色与分割线。 */
+    --color-lime: #c5e995;
+    --color-muted: #819084;
+    --color-line: #ffffff12;
+    --color-cream: #f1eee1;
+    --color-page: #101915;
+    --color-ink: #e7ece5;
+}
+
+/* 经典模式：默认深绿底色，没有 data-mode 时也使用同一套颜色。 */
+body[data-mode="classic"],
+body:not([data-mode]) {
+    --page-bg: #101915;
+    --page-glow: radial-gradient(ellipse at 48% -18%, #28332960, transparent 63%);
+}
+
+/* 天国模式：偏暖的深棕底色与金色光晕。 */
+body[data-mode="kingdom"] {
+    --page-bg: #15130e;
+    --page-glow: radial-gradient(ellipse at 48% -18%, #6b4a2560, transparent 63%);
+}
+
+/* 冒险模式：偏灰绿的底色与草地色光晕。 */
+body[data-mode="adventure"] {
+    --page-bg: #111911;
+    --page-glow: radial-gradient(ellipse at 48% -18%, #596d445c, transparent 63%);
+}
+
+/* 轻量 reset：替代 Tailwind preflight，避免卸载依赖后浏览器默认边距/边框/列表样式改变布局。 */
+*,
+*::before,
+*::after,
+::backdrop {
+    /* 统一盒模型，宽度包含内边距与边框。 */
+    box-sizing: border-box;
+    /* 清除浏览器默认外边距与内边距。 */
+    margin: 0;
+    padding: 0;
+    /* 统一边框基线，后续只按需覆盖颜色或宽度。 */
+    border: 0 solid;
+}
+
+/* 根元素保持浏览器原始行高，具体行高由各组件样式控制。 */
+html {
+    line-height: normal;
+    /* 移动端旋转屏幕时不自动放大字号。 */
+    -webkit-text-size-adjust: 100%;
+}
+
+/* 页面底色与正文排版：模式切换只改上面的 --page-* 变量。 */
+body {
+    min-width: 320px;
+    background-color: var(--page-bg);
+    background-image: var(--page-glow);
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+}
+
+/* 标题继承父级字号与字重，避免浏览器默认 h1/h2 尺寸破坏布局。 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+/* 列表默认去掉项目符号，列表语义仍保留在读屏器中。 */
+ol,
+ul,
+menu {
+    list-style: none;
+}
+
+/* 链接继承文字颜色，默认不显示下划线。 */
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+/* 强调文本沿用浏览器默认的加粗层级。 */
+b,
+strong {
+    font-weight: bolder;
+}
+
+/* 小号文本沿用浏览器默认缩放比例。 */
+small {
+    font-size: 80%;
+}
+
+/* 表单控件继承页面字体与文字颜色，并去掉浏览器自带底色。 */
+button,
+input,
+select,
+textarea {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+/* 按钮恢复可点击外观，并去掉移动端点击高亮。 */
+button {
+    appearance: button;
+    background-image: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 禁用按钮使用禁用光标，避免误以为仍可点击。 */
+button:disabled {
+    cursor: not-allowed;
+}
+
+/* SVG 图标默认块级显示、保持比例且不参与 flex 压缩。 */
+svg {
+    display: block;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+/* 图片和视频默认自适应容器宽度。 */
+img,
+video {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+/* 表格使用合并边框，并继承父级文字颜色。 */
+table {
+    border-collapse: collapse;
+    border-color: inherit;
+    text-indent: 0;
+}
+
+/* 交互元素统一过渡背景、边框、文字与阴影，悬停反馈更柔和。 */
+:where(button, a, input, select) {
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        color 0.2s,
+        box-shadow 0.2s;
+}
+
+/* 键盘聚焦时显示品牌色焦点环，鼠标点击不显示。 */
+:where(button, a, input, select):focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 5px;
+}
+
+/* 文本选中时使用品牌绿与深色文字，保证对比度。 */
+::selection {
+    background: var(--color-lime);
+    color: #182419;
+}
+
+/* 骰子翻滚关键帧：上下位移同时左右倾斜，形成翻滚感。 */
+@keyframes tumble {
+    from {
+        transform: translateY(-9px) rotate(-17deg);
+    }
+    to {
+        transform: translateY(5px) rotate(18deg);
+    }
+}
+
+/* AI 思考点呼吸关键帧：渐隐并轻微上浮。 */
+@keyframes blink {
+    to {
+        opacity: 0.2;
+        transform: translateY(-3px);
+    }
+}
+
+/* 系统开启“减少动态效果”时，几乎关闭所有动画与过渡。 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

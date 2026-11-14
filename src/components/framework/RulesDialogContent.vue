@@ -2,12 +2,10 @@
 import { computed } from "vue";
 import AppIcon from "./AppIcon.vue";
 import { RULES_SOURCE } from "../../game/scoring.js";
-import { createDialogStyles } from "./dialogStyles.js";
 
 // GameDialogs 在 rules 状态下挂载此内容；游戏设置由 game prop 提供，关闭动作向上 emit。
 const props = defineProps({ game: Object, format: Function, theme: String });
 const emit = defineEmits(["close"]);
-const styles = computed(() => createDialogStyles(props.theme));
 const firstBankRule = computed(() =>
     (props.game.entryScore ?? 500) === 0
         ? "首次收分不设最低门槛，只需选择有效计分骰子。"
@@ -32,46 +30,172 @@ const steps = [
 
 <template>
     <section>
-        <div :class="styles.eyebrow">A QUICK GUIDE TO GOOD TIMES</div>
-        <h2 id="rules-title" :class="[styles.h2, 'mt-4.25']">六颗骰子，一场冒险。</h2>
-        <p class="text-[clamp(12px,1vw,13px)] leading-[1.8] text-[#96a68a] max-mob:text-[12px]">
-            两位玩家轮流掷骰，争取先达到本局自定义获胜分数。
-        </p>
-        <ol class="my-6.75 grid list-none gap-5.25 p-0 max-nar:gap-4.75">
-            <li v-for="(step, index) in steps" :key="step.title" class="flex gap-3.5 max-nar:gap-2.75">
-                <span class="pt-px text-[11px] text-[#b7cc92]">0{{ index + 1 }}</span>
+        <div class="dlg-eyebrow">A QUICK GUIDE TO GOOD TIMES</div>
+        <h2 id="rules-title" class="dlg-h2 rules-heading">六颗骰子，一场冒险。</h2>
+        <p class="dlg-lede">两位玩家轮流掷骰，争取先达到本局自定义获胜分数。</p>
+        <ol class="rules-steps">
+            <li v-for="(step, index) in steps" :key="step.title" class="rules-step">
+                <span class="rules-index">0{{ index + 1 }}</span>
                 <div>
-                    <h3 class="mb-1.25 text-[clamp(13px,1.1vw,14px)] font-medium text-[#d7e4c5] max-mob:text-[13px]">
-                        {{ step.title }}
-                    </h3>
-                    <p class="text-[clamp(11px,0.95vw,12px)] leading-[1.9] text-[#9aa990] max-mob:text-[12px]">
-                        {{ index === 1 ? step.detail + firstBankRule : step.detail }}
-                    </p>
+                    <h3 class="rules-step-title">{{ step.title }}</h3>
+                    <p class="rules-step-text">{{ index === 1 ? step.detail + firstBankRule : step.detail }}</p>
                 </div>
             </li>
         </ol>
-        <div class="flex gap-2.5 rounded-[7px] border border-[#afcc7f22] bg-[#abc57405] p-3.5 text-[#b0c294]">
+        <div class="rules-example">
             <AppIcon name="spark" :size="18" />
-            <p class="text-[clamp(11px,0.95vw,12px)] leading-[1.9] text-[#a5b694] max-mob:text-[12px]">
-                例如掷出 <strong class="font-medium text-[#d0e5b5]">1、5、2、3、4、6</strong>，你可以选 1 和 5 得 150
+            <p class="rules-example-text">
+                例如掷出 <strong class="rules-highlight">1、5、2、3、4、6</strong>，你可以选 1 和 5 得 150
                 分，或选择全部六颗以顺子获得
-                <strong class="font-medium text-[#d0e5b5]">1,500 分</strong>。不同次投掷的同点数不能拼成三同。
+                <strong class="rules-highlight">1,500 分</strong>。不同次投掷的同点数不能拼成三同。
             </p>
         </div>
-        <p class="mt-4 text-[9px] leading-[1.9] text-[#7e926e]">
+        <p class="rules-source">
             本作采用
             <a
-                class="inline border-b border-[#bdcd9e55] text-[#bdcd9e] [&>svg]:ml-0.75"
+                class="rules-link"
                 :href="RULES_SOURCE"
                 target="_blank"
                 rel="noopener noreferrer">
                 PlayMonster Farkle 规则<AppIcon name="diagonal" :size="11" /> </a
             >。不同版本的计分可能有所差异，以本页速查表为准。
         </p>
-        <button
-            :class="[styles.button, styles.primary, 'mt-6.25 w-full justify-center [&>svg:last-child]:ml-auto']"
-            @click="emit('close')">
+        <button class="dlg-btn primary rules-close" @click="emit('close')">
             明白了，骰子交给我<AppIcon name="arrow" :size="17" />
         </button>
     </section>
 </template>
+
+<style scoped>
+/* 标题与眉题之间的间距。 */
+.rules-heading {
+    margin-top: 17px;
+}
+
+/* 规则步骤列表：纵向排列，步骤之间留 21px。 */
+.rules-steps {
+    display: grid;
+    gap: 21px;
+    margin: 27px 0;
+    padding: 0;
+}
+
+/* 窄屏规则列表：收紧步骤间距。 */
+@media (max-width: 520px) {
+    .rules-steps {
+        gap: 19px;
+    }
+}
+
+/* 单个规则步骤：序号与正文横向排列。 */
+.rules-step {
+    display: flex;
+    gap: 14px;
+}
+
+/* 窄屏规则步骤：收紧序号与正文间距。 */
+@media (max-width: 520px) {
+    .rules-step {
+        gap: 11px;
+    }
+}
+
+/* 步骤序号：小号浅绿数字，与标题首行对齐。 */
+.rules-index {
+    padding-top: 1px;
+    color: #b7cc92;
+    font-size: 11px;
+}
+
+/* 步骤标题：比正文略大，强调操作顺序。 */
+.rules-step-title {
+    margin-bottom: 5px;
+    color: #d7e4c5;
+    font-size: clamp(13px, 1.1vw, 14px);
+    font-weight: 500;
+}
+
+/* 窄屏步骤标题：固定 13px。 */
+@media (max-width: 700px) {
+    .rules-step-title {
+        font-size: 13px;
+    }
+}
+
+/* 步骤正文：较大的行高保证长句可读性。 */
+.rules-step-text {
+    color: #9aa990;
+    font-size: clamp(11px, 0.95vw, 12px);
+    line-height: 1.9;
+}
+
+/* 窄屏步骤正文：固定 12px。 */
+@media (max-width: 700px) {
+    .rules-step-text {
+        font-size: 12px;
+    }
+}
+
+/* 示例提示框：浅绿描边与极淡底色。 */
+.rules-example {
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #afcc7f22;
+    border-radius: 7px;
+    background: #abc57405;
+    color: #b0c294;
+}
+
+/* 示例正文：比步骤正文略浅，避免抢主内容。 */
+.rules-example-text {
+    color: #a5b694;
+    font-size: clamp(11px, 0.95vw, 12px);
+    line-height: 1.9;
+}
+
+/* 窄屏示例正文：固定 12px。 */
+@media (max-width: 700px) {
+    .rules-example-text {
+        font-size: 12px;
+    }
+}
+
+/* 示例中的关键数字：略亮且加粗。 */
+.rules-highlight {
+    color: #d0e5b5;
+    font-weight: 500;
+}
+
+/* 规则来源说明：最小的辅助文字。 */
+.rules-source {
+    margin-top: 16px;
+    color: #7e926e;
+    font-size: 9px;
+    line-height: 1.9;
+}
+
+/* 外部规则链接：下划线式强调。 */
+.rules-link {
+    display: inline;
+    border-bottom: 1px solid #bdcd9e55;
+    color: #bdcd9e;
+}
+
+/* 链接尾部箭头：紧贴文字。 */
+.rules-link > svg {
+    margin-left: 3px;
+}
+
+/* 底部关闭按钮：占满宽度并居中。 */
+.rules-close {
+    justify-content: center;
+    width: 100%;
+    margin-top: 25px;
+}
+
+/* 关闭按钮尾部图标：推到最右侧。 */
+.rules-close > svg:last-child {
+    margin-left: auto;
+}
+</style>

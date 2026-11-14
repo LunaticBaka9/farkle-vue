@@ -37,8 +37,9 @@ export const useFarkleStore = defineStore("farkle", () => {
     const sound = ref(true);
     // modal 保存当前弹窗类型；null 表示关闭弹窗。
     const modal = ref(null);
-    // toast 保存短时提示文案，空字符串表示不显示提示。
+    // toast 保存短时提示文案与语义类型（success / info / error），空字符串表示不显示。
     const toast = ref("");
+    const toastTone = ref("success");
     // setup* 保存新对局表单的草稿值，提交前不会直接写入当前 game。
     const setupMode = ref(game.value.mode);
     const setupDifficulty = ref(game.value.difficulty);
@@ -105,9 +106,10 @@ export const useFarkleStore = defineStore("farkle", () => {
     );
 
     // 通知只用于短时 UI Toast；每次调用都会清除并重置原定时器。
-    function notify(message) {
+    function notify(message, tone = "success") {
         clearTimeout(toastTimer);
         toast.value = message;
+        toastTone.value = tone;
         toastTimer = setTimeout(() => {
             toast.value = "";
         }, 3200);
@@ -155,7 +157,7 @@ export const useFarkleStore = defineStore("farkle", () => {
                 }
             }, duration);
         } catch (error) {
-            notify(error.message);
+            notify(error.message, "error");
         }
     }
     // 收分动作调用纯规则引擎；成功后清空选择并播放反馈音效。
@@ -167,7 +169,7 @@ export const useFarkleStore = defineStore("farkle", () => {
             aiChoice.value = "";
             play("bank");
         } catch (error) {
-            notify(error.message);
+            notify(error.message, "error");
         }
     }
     function nextTurn() {
@@ -207,11 +209,11 @@ export const useFarkleStore = defineStore("farkle", () => {
         clearTimeout(rollTimer);
         clearInterval(rollInterval);
         if (!targetInputValid.value) {
-            notify("获胜分数须为 1,000–100,000 之间的 500 倍数。");
+            notify("获胜分数须为 1,000–100,000 之间的 500 倍数。", "error");
             return;
         }
         if (!entryInputValid.value) {
-            notify("首次收分门槛须为 0–10,000 之间的 50 倍数。");
+            notify("首次收分门槛须为 0–10,000 之间的 50 倍数。", "error");
             return;
         }
         const fresh = createGame(
@@ -252,7 +254,7 @@ export const useFarkleStore = defineStore("farkle", () => {
     });
     // 挂载后恢复提示、自动打开已结束对局，以及启动 AI 自动机。
     onMounted(() => {
-        if (restored) notify("已恢复上次的对局");
+        if (restored) notify("已恢复上次的对局", "info");
         if (game.value.phase === "finished") modal.value = "winner";
         automation.run();
     });
@@ -275,6 +277,7 @@ export const useFarkleStore = defineStore("farkle", () => {
         sound,
         modal,
         toast,
+        toastTone,
         setupMode,
         setupDifficulty,
         setupTargetScore,

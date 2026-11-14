@@ -1,0 +1,10 @@
+/*
+ * 样式索引入口：由 src/main.js 统一引入，集中管理全局样式模块的加载顺序。
+ * 组件自身的布局样式仍写在各自 SFC 的 <style scoped> 中。
+ *
+ * 顺序说明：
+ * 1. style.css 提供 reset、主题变量、页面底色与全局关键帧；
+ * 2. dialog.css 提供全局弹窗主题（.game-dialog / .dlg-*）。
+ */
+@import "./style.css";
+@import "./dialog.css";

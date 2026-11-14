@@ -68,20 +68,12 @@ function closeFromBackdrop(event) {
 <template>
     <dialog
         ref="dialog"
-        class="fixed inset-6 m-auto max-h-[calc(100dvh-48px)] w-[min(540px,calc(100vw-48px))] overflow-y-auto overscroll-contain rounded-2xl border p-[35px] text-[#e4ecdc] shadow-[0_25px_100px_#0008] backdrop:backdrop-blur-sm max-nar:inset-4 max-nar:max-h-[calc(100dvh-32px)] max-nar:w-[calc(100vw-32px)] max-nar:p-[30px_23px] max-tiny:inset-3 max-tiny:max-h-[calc(100dvh-24px)] max-tiny:w-[calc(100vw-24px)] max-tiny:p-[30px_16px]"
-        :class="
-            theme === 'kingdom'
-                ? 'border-[#b99b6180] bg-[linear-gradient(130deg,#30291a,#1d1a12)] text-[#eee6ce] backdrop:bg-[#120f0acc]'
-                : 'border-[#a8c18355] bg-[linear-gradient(130deg,#273225,#18241c)] backdrop:bg-[#07100bc9]'
-        "
+        class="game-dialog"
+        :class="{ kingdom: theme === 'kingdom' }"
         :aria-labelledby="titleId()"
         @cancel.prevent="emit('close')"
         @click="closeFromBackdrop">
-        <button
-            class="absolute right-4 top-4 grid place-items-center rounded-[5px] border-0 bg-transparent p-1.5 hover:bg-[#ffffff08]"
-            :class="theme === 'kingdom' ? 'text-[#b99b61] hover:text-[#f0e5bf]' : 'text-[#8d9f80] hover:text-[#e2efd1]'"
-            aria-label="关闭弹窗"
-            @click="emit('close')">
+        <button class="dlg-close" aria-label="关闭弹窗" @click="emit('close')">
             <AppIcon name="close" :size="20" />
         </button>
         <!-- 各内容视图只消费 props，动作通过事件交回弹窗容器。 -->
@@ -131,3 +123,4 @@ function closeFromBackdrop(event) {
             @open-activity="emit('openActivity')" />
     </dialog>
 </template>
+

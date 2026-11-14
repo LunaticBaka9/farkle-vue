@@ -2,6 +2,8 @@
 
 基于 Vue 3、Vite 的中文六骰游戏。独立项目，无后端和 API 密钥要求，运行后可离线游玩。
 
+![reviews](reviews.png)
+
 ## To do list
 
 - [x] 基础游戏框架

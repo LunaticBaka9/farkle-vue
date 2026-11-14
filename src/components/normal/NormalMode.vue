@@ -48,8 +48,7 @@ const {
 </script>
 
 <template>
-    <div
-        class="col-start-2 col-end-4 grid grid-cols-[minmax(0,1fr)_314px] items-start gap-x-7 gap-y-2 wide:grid-cols-[minmax(0,1fr)_320px] wide:gap-[30px] max-mid:grid-cols-[minmax(0,1fr)_284px] max-mid:gap-[22px] max-tab:col-start-1 max-tab:col-end-auto max-tab:grid-cols-1 max-tab:gap-y-3">
+    <div class="normal-layout">
         <PageHeading :target-score="targetScore" :format="format" />
 
         <section aria-label="Farkle 对局">
@@ -97,3 +96,40 @@ const {
         <ScoringSidebar :format="format" :entry-score="game.entryScore ?? ENTRY_SCORE" @open-rules="modal = 'rules'" />
     </div>
 </template>
+
+<style scoped>
+/* 普通模式主布局：左侧对局区、右侧计分侧栏，标题横跨两列。 */
+.normal-layout {
+    display: grid;
+    grid-column: 2 / 4;
+    grid-template-columns: minmax(0, 1fr) 314px;
+    align-items: start;
+    column-gap: 28px;
+    row-gap: 8px;
+}
+
+/* 超大屏：加宽右侧侧栏与列间距。 */
+@media (min-width: 1400px) {
+    .normal-layout {
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 30px;
+    }
+}
+
+/* 中屏：收窄右侧侧栏与列间距。 */
+@media (max-width: 1180px) {
+    .normal-layout {
+        grid-template-columns: minmax(0, 1fr) 284px;
+        gap: 22px;
+    }
+}
+
+/* 平板及以下：改为单列，对局区与侧栏上下排列。 */
+@media (max-width: 1000px) {
+    .normal-layout {
+        grid-column: 1 / -1;
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 12px;
+    }
+}
+</style>

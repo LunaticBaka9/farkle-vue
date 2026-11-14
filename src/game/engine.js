@@ -181,90 +181,90 @@ export function startNextTurn(game) {
     return next;
 }
 
-// AI 的决策分为两阶段：先枚举所有合法计分组合，再根据风险、得分、分差和游戏阶段逐项打分。
+// AI 决策只向前看一掷：穷举合法选骰，用期望值决定收分或继续，再用胜负目标覆盖纯分数。
 /**
  * 选择 AI 的下一次行动。
+ * 调用方：game/aiAutomation.js；输入为当前对局快照 game，不读写 Vue 状态。
  *
- * 算法不是随机猜测，而是对当前骰面生成的每一种合法计分组合执行一次启发式估算：
- * 1. 计算保留该组合后，本回合累计得到多少分，以及下一次还能掷几颗骰子。
- * 2. 使用 scoring.js 中的精确概率计算下一次掷骰出现 Farkle 的风险。
- * 3. 根据 AI 难度风格、双方分差和是否处于最终回合，估算继续掷骰的期望收益。
- * 4. 若没有首次收分门槛限制、已达到目标分或继续掷收益为负，则选择收分；否则继续掷。
- *
- * 组合选项本身来自 scoringOptions()：它会穷举当前六颗骰子的合法子集，但只保留合法计分组合。
- * 最终排序会优先选择能够直接赢得最终回合、能够触发目标分或具有最高综合效用的组合。
+ * 问题：在 selecting 阶段同时决定两件事——选哪几颗骰子，以及选完后收分还是继续掷。
+ * 算法：穷举合法动作 + 一层期望值启发式 + 词典序目标覆盖。
+ *       这是深度为 1 的 expectimax / 贪心期望值搜索，不是随机，也不展开整棵对局树。
+ * 实现：
+ *   1. scoringOptions() 给出当前骰面的全部合法计分子集，构成动作空间（最多 63 个）。
+ *   2. 对每个子集用 (1-p)·启发式收益 - p·回合累计分 估算「再掷一次」的期望。
+ *   3. 用首次收分门槛、最终回合、目标分做硬约束，覆盖纯期望值结论。
+ *   4. 按「能赢最终回合 > 能触发目标分 > 综合效用」词典序排序，取第一项。
+ * 原理：骰子子集很小，完整博弈树却随后续掷骰指数膨胀，所以只评估下一掷。
+ *       爆骰概率 p 由 farkleProbability 精确给出；下一掷得分用固定表估计，避免再枚举。
  */
 export function chooseAiMove(game) {
-    // 回合刚开始时没有可选择的骰子，因此 AI 的唯一合法动作是掷出全部六颗。
+    // 回合刚开始没有骰面可选，唯一合法动作是掷出全部六颗。
     if (game.phase === "ready") return { type: "roll", ids: [] };
 
-    // AI 只会在掷骰完成并进入 selecting 阶段时分析选骰方案；Farkle 或交接阶段没有决策动作。
+    // 只在 selecting 阶段决策；Farkle / 交接 / 终局由自动化流程推进，不走本函数。
     if (game.phase !== "selecting") return null;
 
+    // 动作空间：当前骰面的全部合法计分子集，已按分数排过序，这里会重新按效用排序。
     const options = scoringOptions(game.dice);
     const player = game.players[game.active];
     const opponent = game.players[1 - game.active];
 
-    // finalTurn 表示当前玩家正在执行触发目标分后的最后一个回合。
-    // 最终回合会让 AI 更偏向追分，而不是保守收分，以免总分低于对手。
+    // 对手已经触及目标分后，当前玩家正在打唯一的追分回合。
     const finalTurn = game.finalStarter !== null && game.active !== game.finalStarter;
 
-    // AI 风格通过乘数影响“继续掷”的收益：
-    // cautious 收益较低，更倾向收分；balanced 为基准；bold 会放大继续冒险的收益。
+    // 难度只缩放「继续掷」的正收益，不改爆骰概率本身。
+    // cautious 压低收益更爱收分；bold 放大收益更爱冒险。
     const attitude = { cautious: 0.72, balanced: 1, bold: 1.38 }[game.difficulty] || 1;
 
-    // 对每一种计分方案分别计算是否收分，以及继续掷骰的综合效用。
     const evaluated = options.map((option) => {
-        // total 是本回合已有得分加上当前方案分数；AI 能否收分时必须考虑整个回合累计值。
+        // 若现在收分，本回合会落入总分的金额 = 已累计 + 当前子集分数。
         const total = game.turnScore + option.score;
 
-        // remaining 表示保留 option 后还能掷的骰子数量。
-        // 六颗全保留时规则会触发 Hot Dice，因此 remaining 为 0 时仍按重新掷六颗处理。
+        // 留下 0 颗表示 Hot Dice，规则会重新掷六颗，因此按 6 颗估风险和收益。
         const remaining = option.remaining || 6;
 
-        // risk 是下一次掷 remaining 颗骰子后完全没有计分组合的精确爆骰概率；值越高越危险。
+        // p = 再掷 remaining 颗后完全没有计分组合的精确概率。
         const risk = farkleProbability(remaining);
 
-        // 首次收分门槛由当前对局配置决定；0 表示无限制。
-        // 玩家已经有总分后，本回合不再受首次收分门槛限制。
+        // 尚未上板且本回合累计低于门槛时，规则禁止收分，只能继续掷。
         const entryScore = game.entryScore ?? ENTRY_SCORE;
         const canStop = player.score > 0 || entryScore === 0 || total >= entryScore;
 
-        // winsFinal 和 reachesTarget 用于判断当前方案是否直接形成胜局优势或触发最终回合。
+        // 硬目标：最终回合收下就能超过对手，或非最终回合收下就能触发目标分。
         const winsFinal = finalTurn && player.score + total > opponent.score;
         const reachesTarget = !finalTurn && player.score + total >= game.targetScore;
 
-        // gain 是剩余骰数对应的经验性下一掷收益：剩余越少，继续掷通常越危险，理论收益越小。
-        // 数组下标刚好对应 remaining；这里只是启发式估值，不参与实际计分。
+        // 启发式下一掷得分：下标 = 剩余骰数。颗数越少越难出分，估值越低。
+        // 这张表不参与真实计分，只代替对下一掷样本空间的再枚举。
         const gain = [0, 25, 65, 110, 180, 280, 450][remaining];
 
-        // chasing 会根据 AI 与对手的分差提高追分程度，但最高限制为 1.3，避免分差过大时无限放大。
+        // 落后时放大继续掷的正收益，最多 1.3 倍，避免分差过大时无限加码。
         const chasing = Math.min(1.3, 1 + Math.max(0, opponent.score - player.score) / 16000);
 
-        // continueValue = 继续掷的正收益 - 爆骰损失：
-        // (1 - risk) × 下一掷经验收益 × 风格 × 追分系数  减去  risk × 本回合可能损失的累计得分。
+        // 一层期望值：
+        //   存活 (1-p)：拿到启发式收益，再乘风格和追分系数
+        //   爆骰 p    ：输掉当前回合累计分 total
+        // continueValue > 0 表示「再掷一次」的期望优于立刻停手。
         const continueValue = (1 - risk) * gain * attitude * chasing - risk * total;
 
-        // finalTurn 中只要当前方案连对手都追不上，就禁止收分，强制继续寻找更高分方案。
+        // 最终回合若收下仍追不上，禁止停手，否则会直接输掉比赛。
         const mustChase = finalTurn && player.score + total <= opponent.score;
 
-        // 满足首次收分规则后，AI 在以下任一情况下收分：
-        // 1. 当前方案可直接赢得最终回合；2. 可触发目标分/最终回合；3. 继续掷的期望收益已变为负值。
+        // 允许停手时，满足任一目标或期望已转负就收分。
         const stop = canStop && !mustChase && (winsFinal || reachesTarget || continueValue <= 0);
 
         return {
             ...option,
             type: stop ? "bank" : "roll",
-            // 收分方案优先只看实际能得到的分；继续掷方案额外叠加下一掷的期望收益。
+            // 收分只比较已经拿到的子集分数；继续掷再叠加上一层期望值。
             utility: option.score + (stop ? 0 : continueValue),
             winsFinal,
             reachesTarget,
         };
     });
 
-    // 排序优先级从高到低：
-    // 1. 能够赢下最终回合；2. 能触发目标分/最终回合；3. 当前方案的综合效用最高。
-    // 第一项和第二项必须排在组合分数之前，避免 AI 虽然选高分却错失直接获胜机会。
+    // 词典序比较，不是把胜负目标折进同一个分数。
+    // 先保证能赢就赢、能进最终回合就进，最后才比综合效用。
     evaluated.sort(
         (a, b) =>
             Number(b.winsFinal) - Number(a.winsFinal) ||
@@ -272,6 +272,6 @@ export function chooseAiMove(game) {
             b.utility - a.utility,
     );
 
-    // 返回最高优先级方案，其中 ids 是本次应保留的骰子 ID，type 决定收分或继续掷。
+    // ids 是应保留的骰子；type 为 bank 或 roll，交给 aiAutomation 执行。
     return evaluated[0];
 }
