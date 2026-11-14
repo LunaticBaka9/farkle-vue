@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { useKingdomBattleStore } from "../stores/kingdomBattleStore.js";
+import { useDiceLoadoutStore } from "../stores/useDiceLoadoutStore";
 import { useKingdomStore } from "../stores/kingdomStore.js";
 import { useUiStore } from "../../../shared/stores/uiStore.js";
 import { activateSession, deactivateSession } from "../../../shared/session/moduleSession.js";
@@ -15,6 +16,7 @@ import { KINGDOM_EQUIPMENT } from "../data/items.js";
 const route = useRoute();
 const router = useRouter();
 const battle = useKingdomBattleStore();
+const loadout = useDiceLoadoutStore();
 const kingdom = useKingdomStore();
 const ui = useUiStore();
 const ready = ref(false);
@@ -37,7 +39,21 @@ const {
     round,
     isAi,
 } = storeToRefs(battle);
-const { format, progress, difficultyLabels, toggleDie, suggest, doRoll, doBank, nextTurn, startSession, stopSession, pauseSession, resumeSession, ENTRY_SCORE } = battle;
+const {
+    format,
+    progress,
+    difficultyLabels,
+    toggleDie,
+    suggest,
+    doRoll,
+    doBank,
+    nextTurn,
+    startSession,
+    stopSession,
+    pauseSession,
+    resumeSession,
+    ENTRY_SCORE,
+} = battle;
 
 // 装备栏直接读取天国大厅的收藏，避免对战页维护第二份商品数据。
 const equippedItems = computed(() =>
@@ -46,12 +62,8 @@ const equippedItems = computed(() =>
         .map((id) => KINGDOM_EQUIPMENT.item[id])
         .slice(0, 2),
 );
-const equippedDice = computed(() =>
-    kingdom.ownedIds
-        .filter((id) => KINGDOM_EQUIPMENT.dice[id])
-        .map((id) => ({ id, ...KINGDOM_EQUIPMENT.dice[id] }))
-        .slice(0, 1),
-);
+// 出战骰子来自 loadout store 的 6 个槽位；重复的普通骰也会逐颗显示。
+const equippedDice = computed(() => loadout.equippedDice);
 const battleHeadline = computed(() => {
     const text = headline.value;
     if (opponent.value?.name && text.includes("NOVA")) {
@@ -107,7 +119,7 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
                 <h1 class="battle-title">天国对战桌</h1>
                 <p class="battle-opponent">{{ opponent?.name || "天国骑士" }} · {{ opponent?.title || "传奇对手" }}</p>
             </div>
-            <button type="button" class="battle-leave" @click="requestLeaveBattle">返回天国</button>
+            <button type="button" class="battle-leave" @click="requestLeaveBattle">退出对决</button>
         </section>
 
         <section aria-label="天国模式对局">
@@ -119,8 +131,8 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
                     :class="{ active: game.active === index && game.phase !== 'finished' }">
                     <div class="battle-player-head">
                         <span class="battle-avatar"
-                            ><AppIcon :name="index === 1 ? opponent?.icon || 'bot' : 'user'" :size="19"
-                        /></span>
+                            ><AppIcon :name="index === 1 ? opponent?.icon || 'bot' : 'user'" :size="19" />
+                        </span>
                         <div>
                             <h2 class="battle-player-name">{{ player.name }}</h2>
                             <span class="battle-player-role">{{
@@ -129,8 +141,7 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
                         </div>
                     </div>
                     <div class="battle-score">
-                        {{ format(player.score)
-                        }}<span class="battle-target">/ {{ format(targetScore) }}</span>
+                        {{ format(player.score) }}<span class="battle-target">/ {{ format(targetScore) }}</span>
                     </div>
                     <div class="battle-progress">
                         <div class="battle-progress-fill" :style="{ width: progress(player.score) }"></div>
@@ -140,48 +151,46 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
 
             <section class="battle-table" aria-label="天国骰子牌桌">
                 <div class="battle-meta">
-                    <span>第 {{ String(round).padStart(2, "0") }} 轮</span
-                    ><span class="battle-wager">{{
+                    <span>第 {{ String(round).padStart(2, "0") }} 轮</span>
+                    <span class="battle-wager">{{
                         opponent?.wager ? `挑战金 ${opponent.wager}` : "KINGDOM TABLE"
                     }}</span>
                 </div>
                 <div class="battle-score-block">
-                    <span class="battle-kicker">{{
-                        game.phase === "farkle" ? "FARKLE" : "本回合累计"
-                    }}</span>
+                    <span class="battle-kicker">{{ game.phase === "farkle" ? "FARKLE" : "本回合累计" }}</span>
                     <div class="battle-turn-score">
                         {{ game.phase === "farkle" ? "FARKLE!" : format(game.turnScore) }}
                     </div>
                     <p class="battle-headline" aria-live="polite">{{ battleHeadline }}</p>
                 </div>
                 <div class="battle-dice-row">
-                    <template v-if="rolling"
-                        ><Die
+                    <template v-if="rolling">
+                        <Die
                             v-for="(value, index) in rollingFaces"
                             :key="index"
                             :value="value"
                             :index="index"
                             rolling
-                            disabled
-                    /></template>
-                    <template v-else-if="game.dice.length"
-                        ><Die
+                            disabled />
+                    </template>
+                    <template v-else-if="game.dice.length">
+                        <Die
                             v-for="(die, index) in game.dice"
                             :key="die.id"
                             :value="die.value"
                             :index="index"
                             :selected="selected.includes(die.id)"
                             :disabled="isAi || game.phase !== 'selecting'"
-                            @select="toggleDie(die.id)"
-                    /></template>
+                            @select="toggleDie(die.id)" />
+                    </template>
                     <template v-else
                         ><Die
                             v-for="(value, index) in [1, 5, 3, 6, 2, 4]"
                             :key="index"
                             :value="value"
                             :index="index"
-                            decorative
-                    /></template>
+                            decorative />
+                    </template>
                 </div>
                 <div class="battle-selection">
                     {{ selectionText
@@ -230,7 +239,6 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
                         >
                     </button>
                 </div>
-
             </section>
         </section>
 
@@ -241,9 +249,7 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
                     <span class="battle-rail-status">挑战中</span>
                 </div>
                 <div class="battle-rail-identity">
-                    <span class="battle-rail-avatar"
-                        ><AppIcon :name="opponent?.icon || 'bot'" :size="22"
-                    /></span>
+                    <span class="battle-rail-avatar"><AppIcon :name="opponent?.icon || 'bot'" :size="22" /></span>
                     <div>
                         <strong class="battle-rail-name">{{ opponent?.name || "天国骑士" }}</strong>
                         <small class="battle-rail-title">{{ opponent?.title || "传奇对手" }}</small>
@@ -268,26 +274,20 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
                 <div class="battle-equip-grid">
                     <div class="battle-equip-box">
                         <span class="battle-equip-label">背包</span>
-                        <template v-if="equippedItems.length"
-                            ><span
-                                v-for="item in equippedItems"
-                                :key="item.name"
-                                class="battle-equip-item"
-                                ><AppIcon :name="item.icon" :size="14" />{{ item.name }}</span
-                            ></template
-                        >
+                        <template v-if="equippedItems.length">
+                            <span v-for="item in equippedItems" :key="item.name" class="battle-equip-item">
+                                <AppIcon :name="item.icon" :size="14" />{{ item.name }}
+                            </span>
+                        </template>
                         <span v-else class="battle-equip-empty">暂无物品</span>
                     </div>
                     <div class="battle-equip-box">
                         <span class="battle-equip-label">骰子</span>
-                        <template v-if="equippedDice.length"
-                            ><span
-                                v-for="dice in equippedDice"
-                                :key="dice.id"
-                                class="battle-equip-item dice"
-                                ><AppIcon :name="dice.icon" :size="15" />{{ dice.name }}</span
-                            ></template
-                        >
+                        <template v-if="equippedDice.length">
+                            <span v-for="dice in equippedDice" :key="dice.slotIndex" class="battle-equip-item dice">
+                                <AppIcon :name="dice.icon" :size="15" />{{ dice.name }}
+                            </span>
+                        </template>
                         <span v-else class="battle-equip-empty">标准骰子</span>
                     </div>
                 </div>
@@ -806,7 +806,7 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
     justify-content: space-between;
     margin-bottom: 10px;
     color: #c4b27d;
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 600;
     letter-spacing: 1.5px;
 }
@@ -840,7 +840,7 @@ onBeforeUnmount(() => deactivateSession("kingdom-battle"));
 /* 装备栏标签：更小、更暗的说明字。 */
 .battle-equip-label {
     color: #b7aa83;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 /* 已装备物品：浅金底的小胶囊。 */

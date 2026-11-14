@@ -119,7 +119,10 @@ onBeforeUnmount(() => deactivateSession("normal-game"));
             <ActivityList :history="game.history" :format="format" @open-details="ui.modal = 'activity'" />
         </section>
 
-        <ScoringSidebar :format="format" :entry-score="game.entryScore ?? ENTRY_SCORE" @open-rules="ui.modal = 'rules'" />
+        <ScoringSidebar
+            :format="format"
+            :entry-score="game.entryScore ?? ENTRY_SCORE"
+            @open-rules="ui.modal = 'rules'" />
     </div>
 </template>
 

@@ -14,11 +14,11 @@ import { createPlayerActions } from "./session/playerActions.js";
 import { ENTRY_SCORE } from "./scoring.js";
 import { format } from "../utils/format.js";
 
-export function createGameSessionStore({ id, storageKey, legacyKey = null, getUiStore, switchState }) {
+export function createGameSessionStore({ id, storageKey, getUiStore, switchState, getDiceLoadout = () => null, getDiceWeights = () => null, onMatchEnd = null }) {
     return defineStore(id, () => {
         const ui = getUiStore();
-        // 读取本模块存档；普通模式会通过适配器迁移旧版本唯一存档。
-        const { restored, restoredNotice: initialRestoredNotice } = loadSessionGame({ storageKey, legacyKey });
+        // 只读取当前模块存档；结构不兼容时 restoreGame 返回 null，由工厂创建新局。
+        const { restored, restoredNotice: initialRestoredNotice } = loadSessionGame({ storageKey });
         let restoredNotice = initialRestoredNotice;
         const game = shallowRef(restored || createGame());
         const selected = ref([]);
@@ -26,6 +26,11 @@ export function createGameSessionStore({ id, storageKey, legacyKey = null, getUi
         const rollingFaces = ref([]);
         const aiChoice = ref("");
         const active = ref(false);
+        // 挑战开始时冻结 6 颗骰子配置，避免对局中修改装备影响当前牌桌。
+        const matchDiceLoadout = shallowRef(null);
+        function setDiceLoadout(loadout) {
+            matchDiceLoadout.value = Array.isArray(loadout) && loadout.length === 6 ? loadout : null;
+        }
 
         const derived = createSessionDerivedState({ game, selected, rolling, aiChoice });
         const roll = createRollController({
@@ -37,6 +42,8 @@ export function createGameSessionStore({ id, storageKey, legacyKey = null, getUi
             isAi: derived.isAi,
             play: ui.play,
             notify: ui.notify,
+            getDiceLoadout: () => matchDiceLoadout.value ?? getDiceLoadout(),
+            getDiceWeights,
         });
         const turn = createTurnController({
             game,
@@ -63,7 +70,10 @@ export function createGameSessionStore({ id, storageKey, legacyKey = null, getUi
         // 新局创建成功后不再提示“已恢复上次对局”，挑战流程会先创建再进入路由。
         function newGame(overrides = {}) {
             const created = createNewGame(overrides);
-            if (created) restoredNotice = false;
+            if (created) {
+                restoredNotice = false;
+                if (overrides.diceLoadout) setDiceLoadout(overrides.diceLoadout);
+            }
             return created;
         }
         const setup = createSetupController({ game, ui });
@@ -123,9 +133,18 @@ export function createGameSessionStore({ id, storageKey, legacyKey = null, getUi
         watch([game, rolling, () => ui.modal, () => switchState?.open], () => {
             if (active.value) automation.run();
         });
-        watch(game, (value) => {
+        watch(game, (value, previous) => {
             persistSessionGame(value, storageKey);
-            if (active.value && value.phase === "finished") ui.modal = "winner";
+            if (!active.value || value.phase !== "finished") return;
+            ui.modal = "winner";
+            // 只在“进行中 → 结束”时触发一次结算，刷新恢复的终局不会重复发奖。
+            if (previous?.phase !== "finished") {
+                try {
+                    onMatchEnd?.({ game: value, winner: value.winner, playerWon: value.winner === 0 });
+                } catch (error) {
+                    console.error("onMatchEnd failed", error);
+                }
+            }
         });
 
         onScopeDispose(() => {
@@ -148,6 +167,7 @@ export function createGameSessionStore({ id, storageKey, legacyKey = null, getUi
             ...setup,
             ...players,
             newGame,
+            setDiceLoadout,
             startSession,
             stopSession,
             pauseSession,
@@ -155,4 +175,3 @@ export function createGameSessionStore({ id, storageKey, legacyKey = null, getUi
         };
     });
 }
-

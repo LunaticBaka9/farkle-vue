@@ -26,9 +26,7 @@ defineEmits(["toggleSound", "openRules"]);
                 }}</span>
             </button>
             <span class="tools-divider"></span>
-            <button class="tool-btn" @click="$emit('openRules')">
-                <AppIcon name="book" :size="17" />玩法规则
-            </button>
+            <button class="tool-btn" @click="$emit('openRules')"><AppIcon name="book" :size="17" />玩法规则</button>
         </nav>
     </header>
 </template>

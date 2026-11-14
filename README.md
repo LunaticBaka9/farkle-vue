@@ -7,9 +7,9 @@
 ## To do list
 
 - [x] 基础游戏框架
-- [ ] 接入API 与 AI对战
 - [ ] 特殊骰子（天国拯救骰子）
 - [ ] 冒险模式
+- [ ] 接入API 与 AI对战
 
 ## 开始
 
@@ -29,16 +29,6 @@ npm run build    # 生产构建，输出 dist/
 npm run preview  # 预览构建结果
 ```
 
-## 部署路径
-
-`npm run build` 默认按站点根路径 `/` 构建到 `dist/`，适合本地预览或部署到域名根目录。GitHub Pages 的 **Deploy from a branch** 不会自动构建 Vite 项目；如果 Pages 设置为从 `main` 分支的 `/docs` 目录发布，每次更新前运行：
-
-```bash
-npm run build:pages
-```
-
-该命令将构建到 `docs/`，并把资源路径设为 `/farkle-vue/`（项目站点 URL 的路径；`docs` 是仓库中的发布目录，不是 URL 的一部分）。部署到其他子目录时，可以通过 `VITE_BASE_PATH` 覆盖默认路径，例如 `VITE_BASE_PATH=/my-app/ npm run build`。如果 GitHub Pages 使用自定义域名并从站点根目录访问，使用默认的 `npm run build` 即可。
-
 ## 玩法与功能
 
 - **单人模式**：与 NOVA AI 对战。提供稳健、均衡、冒险三种风格，AI 根据剩余骰数的精确爆骰概率、累计得分和双方分差作出决策。AI 只能读取已经投掷的骰子，不读取或修改未来随机结果。
@@ -52,9 +42,8 @@ npm run build:pages
 
 制作前检索并下载核对了发行商原始说明：
 
-- [PlayMonster Farkle 规则 PDF](https://www.playmonster.com/wp-content/uploads/2018/06/Farkle-Rules.pdf)（核对日期：2026-10-26）
-
-计分及回合逻辑遵循该说明。为适配本地游戏，本作固定玩家一先手，同分视为平局；不包含额外家规惩罚。各版本 Farkle 计分可能不同，本作**三个 1 为 300 分，三对为 1500 分**。
+- [PlayMonster Farkle 规则 PDF](https://www.playmonster.com/wp-content/uploads/2018/06/Farkle-Rules.pdf)
+  计分及回合逻辑遵循该说明。为适配本地游戏，本作固定玩家一先手，同分视为平局；不包含额外家规惩罚。各版本 Farkle 计分可能不同，本作**三个 1 为 300 分，三对为 1500 分**。
 
 | 组合                         |                        得分 |
 | ---------------------------- | --------------------------: |

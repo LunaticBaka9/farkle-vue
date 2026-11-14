@@ -3,11 +3,34 @@ import AppIcon from "../../../shared/components/AppIcon.vue";
 
 const props = defineProps({
     coins: { type: Number, required: true },
-    ownedIds: { type: Array, required: true },
+    ownedCounts: { type: Object, required: true },
+    maxDiceCount: { type: Number, required: true },
     shopItems: { type: Array, required: true },
 });
 
 const emit = defineEmits(["purchase"]);
+
+// 卡片计数直接读取 kingdomStore 的 ownedCounts，支持骰子重复购买。
+function ownedCount(item) {
+    return props.ownedCounts[item.id] ?? 0;
+}
+
+function maxCount(item) {
+    return item.category === "dice" ? props.maxDiceCount : 1;
+}
+
+function isMaxed(item) {
+    return ownedCount(item) >= maxCount(item);
+}
+
+function isAffordable(item) {
+    return props.coins >= item.price;
+}
+
+function buttonLabel(item) {
+    if (isMaxed(item)) return item.category === "dice" ? `已满 ${maxCount(item)} 颗` : "已拥有";
+    return `购买 · ${item.price} 金币`;
+}
 </script>
 
 <template>
@@ -17,7 +40,9 @@ const emit = defineEmits(["purchase"]);
                 <span class="shop-eyebrow">KINGDOM MARKET</span>
                 <h2 id="kingdom-shop-title" class="shop-title">古堡商店</h2>
             </div>
-            <span class="shop-count">{{ ownedIds.length }}/{{ shopItems.length }} 已拥有</span>
+            <span class="shop-count">
+                {{ Object.keys(ownedCounts).filter((id) => ownedCounts[id] > 0).length }}/{{ shopItems.length }} 已收藏
+            </span>
         </div>
         <div class="shop-grid">
             <article v-for="item in shopItems" :key="item.id" class="shop-item">
@@ -26,21 +51,19 @@ const emit = defineEmits(["purchase"]);
                     <div class="shop-item-text">
                         <strong class="shop-name">{{ item.name }}</strong>
                         <small class="shop-detail">{{ item.detail }}</small>
+                        <small v-if="ownedCount(item) > 0" class="shop-owned">
+                            已持有: {{ ownedCount(item) }} / {{ maxCount(item) }}
+                            {{ item.category === "dice" ? "颗" : "件" }}
+                        </small>
                     </div>
                 </div>
                 <button
                     type="button"
                     class="shop-buy"
-                    :class="
-                        ownedIds.includes(item.id)
-                            ? 'owned'
-                            : coins >= item.price
-                              ? 'affordable'
-                              : 'unaffordable'
-                    "
-                    :disabled="ownedIds.includes(item.id) || coins < item.price"
+                    :class="isMaxed(item) ? 'owned' : isAffordable(item) ? 'affordable' : 'unaffordable'"
+                    :disabled="isMaxed(item) || !isAffordable(item)"
                     @click="emit('purchase', item)">
-                    {{ ownedIds.includes(item.id) ? "已拥有" : `购买 · ${item.price} 金币` }}
+                    {{ buttonLabel(item) }}
                 </button>
             </article>
         </div>
@@ -183,6 +206,13 @@ const emit = defineEmits(["purchase"]);
 }
 
 /* 商品说明：暖灰色小字。 */
+.shop-owned {
+    display: block;
+    margin-top: 5px;
+    color: #d8bd78;
+    font-size: 11px;
+}
+
 .shop-detail {
     display: block;
     margin-top: 5px;

@@ -20,6 +20,7 @@ const props = defineProps({
     setupNames: Array,
     targetInputValid: Boolean,
     entryInputValid: Boolean,
+    showReturnLobby: Boolean,
 });
 const emit = defineEmits([
     "close",
@@ -31,12 +32,16 @@ const emit = defineEmits([
     "update:setupEntryScore",
     "update:setupNames",
     "openActivity",
+    "returnLobby",
 ]);
 
 const COMMON_MODALS = ["rules", "setup", "activity", "winner"];
 const open = computed(() => COMMON_MODALS.includes(props.modal));
 const titleId = computed(
-    () => ({ rules: "rules-title", setup: "setup-title", activity: "activity-title", winner: "winner-title" })[props.modal] || "winner-title",
+    () =>
+        ({ rules: "rules-title", setup: "setup-title", activity: "activity-title", winner: "winner-title" })[
+            props.modal
+        ] || "winner-title",
 );
 </script>
 
@@ -77,8 +82,10 @@ const titleId = computed(
             :format="format"
             :winner-label="winnerLabel"
             :theme="theme"
+            :show-return-lobby="showReturnLobby"
             @close="emit('close')"
             @open-setup="emit('openSetup')"
-            @open-activity="emit('openActivity')" />
+            @open-activity="emit('openActivity')"
+            @return-lobby="emit('returnLobby')" />
     </DialogShell>
 </template>

@@ -21,9 +21,7 @@ const emit = defineEmits(["confirm", "cancel"]);
                 <button type="button" class="dlg-btn secondary switch-cancel" @click="emit('cancel')">
                     继续留在当前模式
                 </button>
-                <button type="button" class="dlg-btn primary switch-confirm" @click="emit('confirm')">
-                    切换模式
-                </button>
+                <button type="button" class="dlg-btn primary switch-confirm" @click="emit('confirm')">切换模式</button>
             </div>
         </div>
     </DialogShell>

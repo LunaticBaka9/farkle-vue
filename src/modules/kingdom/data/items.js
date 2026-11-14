@@ -1,4 +1,6 @@
 // 天国模式静态目录：由 kingdom 模式页、商店和对战装备展示共同读取。
+export const KINGDOM_DICE_MAX_COPIES = 6;
+
 export const DEFAULT_KINGDOM_STATE = Object.freeze({
     coins: 1250,
     ownedIds: Object.freeze(["item-cross", "item-bag", "dice-royal"]),

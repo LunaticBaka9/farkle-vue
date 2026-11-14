@@ -31,34 +31,25 @@ const expanded = ref(false);
             <div>
                 <div class="score-pair-row">
                     <Die :value="1" decorative small /><span>单个 1</span
-                    ><strong class="score-value score-value-large"
-                        >100<small class="score-unit">分</small></strong
-                    >
+                    ><strong class="score-value score-value-large">100<small class="score-unit">分</small></strong>
                 </div>
                 <div class="score-pair-row">
-                    <Die :value="5" decorative small /><span>单个 5</span
-                    ><strong class="score-value score-value-large"
-                        >50<small class="score-unit">分</small></strong
-                    >
+                    <Die :value="5" decorative small /><span>单个 5</span>
+                    <strong class="score-value score-value-large">50<small class="score-unit">分</small></strong>
                 </div>
             </div>
             <div class="score-sep"></div>
             <div class="score-line">
-                <span>三个 1</span
-                ><strong class="score-value">300<small class="score-unit">分</small></strong>
+                <span>三个 1</span><strong class="score-value">300<small class="score-unit">分</small></strong>
             </div>
-            <div class="score-line">
-                <span>三个 2 — 6</span><strong class="score-value">点数 × 100</strong>
-            </div>
+            <div class="score-line"><span>三个 2 — 6</span><strong class="score-value">点数 × 100</strong></div>
             <div id="score-extra" class="score-extra">
                 <div class="score-line">
-                    <span>四 / 五 / 六同</span
-                    ><strong class="score-value compact">1,000 / 2,000 / 3,000</strong>
+                    <span>四 / 五 / 六同</span><strong class="score-value compact">1,000 / 2,000 / 3,000</strong>
                 </div>
                 <div class="score-sep"></div>
                 <div class="score-line">
-                    <span>1–6 顺子</span
-                    ><strong class="score-value">1,500<small class="score-unit">分</small></strong>
+                    <span>1–6 顺子</span><strong class="score-value">1,500<small class="score-unit">分</small></strong>
                 </div>
                 <div class="score-line">
                     <span>三对<span class="score-hint">2 + 2 + 2</span></span
@@ -69,8 +60,7 @@ const expanded = ref(false);
                     ><strong class="score-value">1,500<small class="score-unit">分</small></strong>
                 </div>
                 <div class="score-line">
-                    <span>两组三同</span
-                    ><strong class="score-value">2,500<small class="score-unit">分</small></strong>
+                    <span>两组三同</span><strong class="score-value">2,500<small class="score-unit">分</small></strong>
                 </div>
             </div>
             <button class="score-more" @click="$emit('openRules')">
@@ -91,7 +81,8 @@ const expanded = ref(false);
             <p class="entry-text">
                 <template v-if="entryScore > 0">
                     首次收分，至少累计
-                    <strong class="entry-strong">{{ format(entryScore) }} 分</strong>。<br />之后每回合随时可以见好就收。
+                    <strong class="entry-strong">{{ format(entryScore) }} 分 </strong
+                    >。<br />之后每回合随时可以见好就收。
                 </template>
                 <template v-else>首次收分无最低门槛。<br />选择有效计分骰子即可落袋为安。</template>
             </p>

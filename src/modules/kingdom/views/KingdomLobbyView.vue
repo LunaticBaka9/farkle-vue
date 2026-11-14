@@ -8,6 +8,7 @@ import KingdomShop from "../components/KingdomShop.vue";
 import KingdomDialogs from "../components/dialogs/KingdomDialogs.vue";
 import { useKingdomStore } from "../stores/kingdomStore.js";
 import { useKingdomBattleStore } from "../stores/kingdomBattleStore.js";
+import { useDiceLoadoutStore } from "../stores/useDiceLoadoutStore";
 import { useUiStore } from "../../../shared/stores/uiStore.js";
 import { activateSession, deactivateSession } from "../../../shared/session/moduleSession.js";
 import { ENTRY_SCORE } from "../../../shared/game/scoring.js";
@@ -15,6 +16,7 @@ import { ENTRY_SCORE } from "../../../shared/game/scoring.js";
 const router = useRouter();
 const kingdom = useKingdomStore();
 const battle = useKingdomBattleStore();
+const loadout = useDiceLoadoutStore();
 const ui = useUiStore();
 const notice = ref("");
 let noticeTimer;
@@ -44,6 +46,8 @@ function challengeOpponent(opponent) {
         targetScore: opponent.target,
         entryScore: ENTRY_SCORE,
         names: ["你", opponent.name],
+        // 桥接层只传 6 个完整骰子配置，引擎不依赖天国 store。
+        diceLoadout: loadout.equippedConfigs,
     });
     battle.setOpponentName(opponent.name);
     ui.closeDialog();
@@ -77,21 +81,16 @@ onBeforeUnmount(() => {
             :coins="kingdom.coins"
             @open-backpack="ui.modal = 'kingdom-backpack'"
             @open-dice-list="ui.modal = 'kingdom-dice-list'"
-            @reset-player-state="ui.modal = 'kingdom-reset'"
-        />
+            @reset-player-state="ui.modal = 'kingdom-reset'" />
 
         <div class="kingdom-grid">
-            <KingdomOpponents
-                :coins="kingdom.coins"
-                :opponents="kingdom.opponents"
-                @challenge="challengeOpponent"
-            />
+            <KingdomOpponents :coins="kingdom.coins" :opponents="kingdom.opponents" @challenge="challengeOpponent" />
             <KingdomShop
                 :coins="kingdom.coins"
-                :owned-ids="kingdom.ownedIds"
+                :owned-counts="kingdom.ownedCounts"
+                :max-dice-count="kingdom.maxDiceCopies"
                 :shop-items="kingdom.shopItems"
-                @purchase="purchaseItem"
-            />
+                @purchase="purchaseItem" />
         </div>
 
         <Transition name="fade">
@@ -104,8 +103,7 @@ onBeforeUnmount(() => {
             :modal="ui.modal"
             theme="kingdom"
             @close="ui.closeDialog"
-            @reset-kingdom-state="resetKingdomState"
-        />
+            @reset-kingdom-state="resetKingdomState" />
     </section>
 </template>
 

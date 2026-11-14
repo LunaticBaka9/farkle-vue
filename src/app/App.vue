@@ -29,8 +29,13 @@ const publicMode = computed(() => route.meta.publicMode ?? "classic");
 const theme = computed(() => route.meta.theme ?? "classic");
 
 const { activeSession, game, winnerLabel, footerTargetScore } = useActiveGameSession(route);
-const { targetLabel, requestModeChange, confirmSwitch, cancelSwitch, installNavigationGuard } =
-    useSwitchNavigation({ route, router, ui, kingdom });
+const { targetLabel, requestModeChange, confirmSwitch, cancelSwitch, returnToLobby, installNavigationGuard } =
+    useSwitchNavigation({
+        route,
+        router,
+        ui,
+        kingdom,
+    });
 const { cleanupTheme } = useRouteTheme({ theme, publicMode });
 
 let removeGuard = null;
@@ -105,10 +110,12 @@ onBeforeUnmount(() => {
             :setup-names="ui.setupNames"
             :target-input-valid="ui.targetInputValid"
             :entry-input-valid="ui.entryInputValid"
+            :show-return-lobby="route.meta.module === 'kingdom'"
             @close="ui.closeDialog"
             @new-game="handleNewGame"
             @open-setup="openSetup"
             @open-activity="ui.modal = 'activity'"
+            @return-lobby="returnToLobby"
             @update:setup-mode="ui.setupMode = $event"
             @update:setup-difficulty="ui.setupDifficulty = $event"
             @update:setup-target-score="ui.setupTargetScore = $event"

@@ -2,8 +2,14 @@
 import AppIcon from "../AppIcon.vue";
 
 // GameDialogs 在 winner 状态下挂载此结果视图；分数与胜者来自 Pinia game 状态。
-defineProps({ game: Object, format: Function, winnerLabel: String, theme: String });
-const emit = defineEmits(["close", "openSetup", "openActivity"]);
+defineProps({
+    game: Object,
+    format: Function,
+    winnerLabel: String,
+    theme: String,
+    showReturnLobby: Boolean,
+});
+const emit = defineEmits(["close", "openSetup", "openActivity", "returnLobby"]);
 </script>
 
 <template>
@@ -27,6 +33,12 @@ const emit = defineEmits(["close", "openSetup", "openActivity"]);
         </div>
         <button class="dlg-btn primary winner-btn" @click="emit('openSetup')">
             再来一局<AppIcon name="restart" :size="17" />
+        </button>
+        <button
+            v-if="showReturnLobby"
+            class="dlg-btn secondary winner-btn winner-btn-secondary winner-btn-lobby"
+            @click="emit('returnLobby')">
+            返回大厅<AppIcon name="arrow" :size="17" />
         </button>
         <button class="dlg-btn secondary winner-btn winner-btn-secondary" @click="emit('openActivity')">
             查看动态详情<AppIcon name="history" :size="17" />
@@ -168,8 +180,13 @@ const emit = defineEmits(["close", "openSetup", "openActivity"]);
     margin-top: 25px;
 }
 
-/* 第二个操作按钮与主按钮之间留出间隔。 */
+/* 次级操作按钮与上方按钮之间留出间隔。 */
 .winner-btn-secondary {
+    margin-top: 9px;
+}
+
+/* 天国大厅返回按钮：保持与查看动态一致的宽度和间距。 */
+.winner-btn-lobby {
     margin-top: 9px;
 }
 

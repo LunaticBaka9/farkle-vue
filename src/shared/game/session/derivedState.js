@@ -27,11 +27,7 @@ export function createSessionDerivedState({ game, selected, rolling, aiChoice })
     const nextRisk = computed(() => Math.round(farkleProbability(nextDiceCount.value) * 100));
     const entryMissing = computed(() => {
         const entryScore = game.value.entryScore ?? ENTRY_SCORE;
-        return (
-            game.value.players[game.value.active].score === 0 &&
-            entryScore > 0 &&
-            pendingScore.value < entryScore
-        );
+        return game.value.players[game.value.active].score === 0 && entryScore > 0 && pendingScore.value < entryScore;
     });
     const showHandoff = computed(() => ["farkle", "handoff"].includes(game.value.phase));
     const progress = (score) => `${Math.min((score / targetScore.value) * 100, 100)}%`;

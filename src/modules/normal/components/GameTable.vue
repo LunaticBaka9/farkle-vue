@@ -74,38 +74,38 @@ defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "o
                     dimmed: game.phase === 'ready' || showHandoff,
                     faded: game.phase === 'farkle',
                 }">
-                <template v-if="rolling"
-                    ><Die
+                <template v-if="rolling">
+                    <Die
                         v-for="(value, index) in rollingFaces"
                         :key="index"
                         :value="value"
                         :index="index"
                         rolling
-                        disabled
-                /></template>
-                <template v-else-if="game.dice.length"
-                    ><Die
+                        disabled />
+                </template>
+                <template v-else-if="game.dice.length">
+                    <Die
                         v-for="(die, index) in game.dice"
                         :key="die.id"
                         :value="die.value"
                         :index="index"
                         :selected="selected.includes(die.id)"
                         :disabled="isAi || game.phase !== 'selecting'"
-                        @select="$emit('toggleDie', die.id)"
-                /></template>
-                <template v-else
-                    ><Die
+                        @select="$emit('toggleDie', die.id)" />
+                </template>
+                <template v-else>
+                    <Die
                         v-for="(value, index) in [1, 5, 3, 6, 2, 4]"
                         :key="index"
                         :value="value"
                         :index="index"
-                        decorative
-                /></template>
+                        decorative />
+                </template>
             </div>
             <div class="selection-row" :class="{ warning: selected.length && !chosenScore }">
-                <span>{{ selectionText }}</span
-                ><span v-if="chosenScore" class="selection-score">+{{ format(chosenScore) }} 分</span
-                ><button
+                <span>{{ selectionText }}</span>
+                <span v-if="chosenScore" class="selection-score">+{{ format(chosenScore) }} 分</span>
+                <button
                     v-if="game.phase === 'selecting' && !isAi && !rolling"
                     class="suggest-btn"
                     @click="$emit('suggest')">
@@ -119,19 +119,19 @@ defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "o
                         v-for="(group, index) in game.kept"
                         :key="index"
                         class="kept-group"
-                        :title="`第 ${group.roll} 次投掷，${group.score} 分`"
-                        ><Die
+                        :title="`第 ${group.roll} 次投掷，${group.score} 分`">
+                        <Die
                             v-for="(value, i) in group.values"
                             :key="i"
                             :value="value"
                             :index="i"
                             class="kept-die"
                             small
-                            decorative
-                    /></span>
+                            decorative />
+                    </span>
                 </div>
-                <span v-else class="kept-empty">等待你的第一个得分组合</span
-                ><span class="kept-note">组合仅限同一次投掷</span>
+                <span v-else class="kept-empty">等待你的第一个得分组合</span>
+                <span class="kept-note">组合仅限同一次投掷</span>
             </div>
             <div v-if="showHandoff" class="handoff-row">
                 <div v-if="game.mode === 'ai'" class="ai-thinking">
@@ -148,8 +148,9 @@ defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "o
             </div>
             <div v-else-if="game.phase === 'finished'" class="finished-actions">
                 <button class="table-btn primary" @click="$emit('openSetup')">
-                    <AppIcon name="restart" :size="18" />再来一局</button
-                ><button class="table-btn secondary" @click="$emit('openWinner')">
+                    <AppIcon name="restart" :size="18" />再来一局
+                </button>
+                <button class="table-btn secondary" @click="$emit('openWinner')">
                     查看结果<AppIcon name="trophy" :size="17" />
                 </button>
                 <button class="table-btn secondary" @click="$emit('openActivity')">
@@ -157,19 +158,16 @@ defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "o
                 </button>
             </div>
             <div v-else class="table-actions">
-                <button
-                    class="table-btn primary roll-btn"
-                    :disabled="!canRollNow"
-                    @click="$emit('roll')">
+                <button class="table-btn primary roll-btn" :disabled="!canRollNow" @click="$emit('roll')">
                     <AppIcon name="dice" :size="21" /><span>{{
                         rolling ? "掷骰中…" : isAi ? "NOVA 思考中…" : game.phase === "ready" ? "掷出骰子" : "继续掷骰"
-                    }}</span
-                    ><span
-                        v-if="game.phase === 'selecting' && !rolling && !isAi"
-                        class="roll-count"
+                    }}</span>
+                    <span v-if="game.phase === 'selecting' && !rolling && !isAi" class="roll-count"
                         >{{ nextDiceCount }} 颗</span
-                    ><AppIcon name="arrow" :size="17" /></button
-                ><button
+                    >
+                    <AppIcon name="arrow" :size="17" />
+                </button>
+                <button
                     class="table-btn secondary bank-btn"
                     :disabled="!canBankNow"
                     :title="
@@ -177,24 +175,25 @@ defineEmits(["toggleDie", "suggest", "roll", "bank", "nextTurn", "openSetup", "o
                     "
                     :aria-describedby="!canBankNow ? 'table-hint' : undefined"
                     @click="$emit('bank')">
-                    <AppIcon name="bank" :size="18" /><span>收分 · 结束回合</span
-                    ><strong v-if="canBankNow" class="bank-points">+{{ format(pendingScore) }}</strong>
+                    <AppIcon name="bank" :size="18" /><span>收分 · 结束回合</span>
+                    <strong v-if="canBankNow" class="bank-points">+{{ format(pendingScore) }}</strong>
                 </button>
             </div>
             <div id="table-hint" class="table-hint">
-                <template v-if="validSelection && !showHandoff && !rolling"
-                    ><AppIcon name="info" :size="12" /><span>{{
+                <template v-if="validSelection && !showHandoff && !rolling">
+                    <AppIcon name="info" :size="12" /><span>{{
                         entryMissing
                             ? `首次收分还差 ${entryScore - pendingScore} 分，需继续掷骰。`
                             : `下次掷 ${nextDiceCount} 颗，爆骰概率约 ${nextRisk}%。冒险还是收手？`
-                    }}</span></template
-                ><template v-else
-                    ><AppIcon name="info" :size="12" /><span>{{
+                    }}</span>
+                </template>
+                <template v-else>
+                    <AppIcon name="info" :size="12" /><span>{{
                         entryMissing
                             ? `首次收分需在同一回合累计至少 ${format(entryScore)} 分，先选择可计分骰子。`
                             : "没有得分组合即爆骰，本回合未收分得分全部归零。"
-                    }}</span></template
-                >
+                    }}</span>
+                </template>
             </div>
         </div>
     </section>

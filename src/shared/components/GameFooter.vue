@@ -10,10 +10,10 @@ defineProps({ targetScore: Number, format: Function });
             <small class="footer-tagline">ROLL. RISK. REPEAT.</small>
         </span>
         <span class="footer-note">为每一个「再来一次」的瞬间而作。</span>
-        <span class="footer-meta"
-            >6 DICE <i class="footer-slash">/</i> 2 PLAYERS
-            <i class="footer-slash">/</i> {{ format(targetScore) }} POINTS</span
-        >
+        <span class="footer-meta">
+            6 DICE <i class="footer-slash">/</i> 2 PLAYERS <i class="footer-slash">/</i>
+            {{ format(targetScore) }} POINTS
+        </span>
     </footer>
 </template>
 

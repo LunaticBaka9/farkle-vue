@@ -26,8 +26,8 @@ defineEmits(["openDetails"]);
                 <span class="activity-body">
                     <strong class="activity-name">{{ event.name }}</strong
                     >{{ event.type === "bank" ? "落袋为安" : "遭遇 Farkle"
-                    }}<small v-if="event.final" class="activity-final-tag">触发最终回合</small></span
-                >
+                    }}<small v-if="event.final" class="activity-final-tag">触发最终回合</small>
+                </span>
                 <b class="activity-points" :class="{ bank: event.type === 'bank' }"
                     >{{
                         event.type === "bank"
@@ -35,8 +35,9 @@ defineEmits(["openDetails"]);
                             : event.points
                               ? "失去 " + format(event.points)
                               : "本回合归零"
-                    }}<small v-if="event.type === 'bank'" class="activity-unit">分</small></b
-                ><time class="activity-time">{{ index === 0 ? "刚刚" : `第 ${Math.ceil(event.turn / 2)} 轮` }}</time>
+                    }}<small v-if="event.type === 'bank'" class="activity-unit">分</small>
+                </b>
+                <time class="activity-time">{{ index === 0 ? "刚刚" : `第 ${Math.ceil(event.turn / 2)} 轮` }}</time>
             </li>
         </ol>
     </section>

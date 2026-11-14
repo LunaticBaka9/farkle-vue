@@ -37,8 +37,10 @@ export function scoreDice(values) {
         const n = counts[i];
         // n 条：6=3000，5=2000，4=1000；三个 1=300，三个 k=k*100。
         if (n >= 3) total += n === 6 ? 3000 : n === 5 ? 2000 : n === 4 ? 1000 : i === 0 ? 300 : (i + 1) * 100;
-        else if (i === 0) total += n * 100; // 散 1：每颗 100
-        else if (i === 4) total += n * 50; // 散 5：每颗 50
+        else if (i === 0)
+            total += n * 100; // 散 1：每颗 100
+        else if (i === 4)
+            total += n * 50; // 散 5：每颗 50
         else if (n > 0) return 0; // 2/3/4/6 的散骰不能单独计分，整组非法
     }
     return total;

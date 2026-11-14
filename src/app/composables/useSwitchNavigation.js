@@ -2,11 +2,7 @@
 import { computed } from "vue";
 import { routeForMode } from "../router/lastMode.js";
 import { pauseActiveSession, resumeActiveSession, stopActiveSession } from "../../shared/session/moduleSession.js";
-import {
-    closeSwitchRequest,
-    openSwitchRequest,
-    switchRequest,
-} from "../../shared/session/switchRequest.js";
+import { closeSwitchRequest, openSwitchRequest, switchRequest } from "../../shared/session/switchRequest.js";
 
 const MODE_LABELS = { classic: "普通模式", kingdom: "天国模式", adventure: "冒险模式" };
 
@@ -56,6 +52,19 @@ export function useSwitchNavigation({ route, router, ui, kingdom }) {
         resumeActiveSession();
     }
 
+    // 终局弹窗的“返回大厅”是明确动作，直接清场并导航，不再弹出切换确认。
+    function returnToLobby() {
+        stopActiveSession();
+        if (route.meta.session === "kingdom-battle") kingdom.endBattle();
+        ui.closeDialog();
+        ui.clearToast();
+        closeSwitchRequest();
+        allowNavigation = true;
+        router.push("/kingdom").finally(() => {
+            allowNavigation = false;
+        });
+    }
+
     function installNavigationGuard() {
         return router.beforeEach((to, from) => {
             if (allowNavigation) {
@@ -77,5 +86,12 @@ export function useSwitchNavigation({ route, router, ui, kingdom }) {
         });
     }
 
-    return { targetLabel, requestModeChange, confirmSwitch, cancelSwitch, installNavigationGuard };
+    return {
+        targetLabel,
+        requestModeChange,
+        confirmSwitch,
+        cancelSwitch,
+        returnToLobby,
+        installNavigationGuard,
+    };
 }

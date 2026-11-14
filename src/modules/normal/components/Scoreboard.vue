@@ -47,8 +47,7 @@ defineEmits(["selectMode", "openSetup"]);
                     </div>
                     <div class="player-id">
                         <h2 class="player-name">
-                            {{ p.name
-                            }}<span v-if="index === 1 && game.mode === 'ai'" class="ai-tag">AI</span>
+                            {{ p.name }}<span v-if="index === 1 && game.mode === 'ai'" class="ai-tag">AI</span>
                         </h2>
                         <span class="player-role">{{
                             index === 1 && game.mode === "ai"
@@ -56,17 +55,13 @@ defineEmits(["selectMode", "openSetup"]);
                                 : "PLAYER 0" + (index + 1)
                         }}</span>
                     </div>
-                    <span
-                        v-if="game.active === index && game.phase !== 'finished'"
-                        class="turn-badge"
-                        ><i class="turn-dot"></i>当前回合</span
-                    ><span v-else class="turn-state">{{
-                        game.phase === "finished" ? "对局结束" : "等待中"
-                    }}</span>
+                    <span v-if="game.active === index && game.phase !== 'finished'" class="turn-badge"
+                        ><i class="turn-dot"></i>当前回合
+                    </span>
+                    <span v-else class="turn-state">{{ game.phase === "finished" ? "对局结束" : "等待中" }}</span>
                 </div>
                 <div class="player-score" aria-live="polite" aria-atomic="true">
-                    {{ format(p.score)
-                    }}<span class="player-target">/ {{ format(targetScore) }}</span>
+                    {{ format(p.score) }}<span class="player-target">/ {{ format(targetScore) }}</span>
                 </div>
                 <div
                     class="progress-track"

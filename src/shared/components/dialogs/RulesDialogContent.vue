@@ -51,13 +51,8 @@ const steps = [
             </p>
         </div>
         <p class="rules-source">
-            本作采用
-            <a
-                class="rules-link"
-                :href="RULES_SOURCE"
-                target="_blank"
-                rel="noopener noreferrer">
-                PlayMonster Farkle 规则<AppIcon name="diagonal" :size="11" /> </a
+            本作采用<a class="rules-link" :href="RULES_SOURCE" target="_blank" rel="noopener noreferrer"
+                >PlayMonster Farkle 规则<AppIcon name="diagonal" :size="11" /></a
             >。不同版本的计分可能有所差异，以本页速查表为准。
         </p>
         <button class="dlg-btn primary rules-close" @click="emit('close')">
@@ -171,7 +166,7 @@ const steps = [
 .rules-source {
     margin-top: 16px;
     color: #7e926e;
-    font-size: 9px;
+    font-size: 12px;
     line-height: 1.9;
 }
 
@@ -180,11 +175,14 @@ const steps = [
     display: inline;
     border-bottom: 1px solid #bdcd9e55;
     color: #bdcd9e;
+    white-space: nowrap; /* 保证链接文字和右上角小箭头永远粘在一起，绝不拆行！ */
 }
 
 /* 链接尾部箭头：紧贴文字。 */
 .rules-link > svg {
     margin-left: 3px;
+    display: inline-block;
+    flex-shrink: 0;
 }
 
 /* 底部关闭按钮：占满宽度并居中。 */

@@ -1,6 +1,7 @@
 // 纯对局引擎：由 shared/game/createGameSessionStore.js 的玩家动作和 shared/game/aiAutomation.js 的 AI 流程调用。
 // 公开动作接收旧 game 并返回新 game；本层不读取 Vue 状态或浏览器存储。
 import { ENTRY_SCORE, TARGET_SCORE, hasScore, scoreDice, scoringOptions, farkleProbability } from "./scoring.js";
+import { rollWeightedFace } from "./diceWeights.js";
 
 /** 校验获胜分数是否安全且符合 500 分间隔。 */
 export function isValidTargetScore(score) {
@@ -94,35 +95,57 @@ export function canBank(game, ids = []) {
     return total > 0 && (game.players[game.active].score > 0 || entryScore === 0 || total >= entryScore);
 }
 
+// 兼容两种传入格式：纯权重数组，或桥接层映射出的 { dieId, weights } 配置。
+function resolveDiceConfig(diceConfig, slot) {
+    const entry = Array.isArray(diceConfig) ? diceConfig[slot] : null;
+    if (Array.isArray(entry)) return { weights: entry, dieId: null };
+    if (entry && typeof entry === "object") {
+        return { weights: entry.weights ?? null, dieId: entry.dieId ?? null };
+    }
+    return { weights: null, dieId: null };
+}
+
 // Passing in a RNG keeps the rules deterministic and testable.
 /**
  * 执行掷骰或继续掷骰。
- * random 参数允许测试注入固定随机序列；默认使用浏览器随机数。
+ * random 参数允许测试注入固定随机序列；diceConfig 支持“权重数组”或完整的 6 颗骰子配置。
  */
-export function rollDice(game, ids = [], random = Math.random) {
+export function rollDice(game, ids = [], random = Math.random, diceConfig = null) {
     if (!["ready", "selecting"].includes(game.phase)) throw new Error("当前不能掷骰");
     const next = copy(game);
     let count = 6;
     let hotDice = false;
+    // slot 记录该骰子来自装备栏的哪个槽位，继续掷骰时沿用原槽位权重。
+    let slots = [0, 1, 2, 3, 4, 5];
     if (game.phase === "selecting") {
         const score = selectionScore(game, ids);
         if (!score) throw new Error("请先选出至少一组可计分骰子");
         const chosen = game.dice.filter((d) => ids.includes(d.id));
         next.kept.push({ roll: game.rollNumber, values: chosen.map((d) => d.value), score });
         next.turnScore += score;
-        count = game.dice.length - chosen.length;
+        const remaining = game.dice.filter((die) => !ids.includes(die.id));
+        count = remaining.length;
+        slots = remaining.map((die, index) => (Number.isInteger(die.slot) ? die.slot : index));
         // 全部骰子都被选中时触发 Hot Dice：累计分保留，下一掷恢复六颗。
         if (count === 0) {
             count = 6;
+            slots = [0, 1, 2, 3, 4, 5];
             next.kept = [];
             hotDice = true;
         }
     }
     next.rollNumber++;
-    next.dice = Array.from({ length: count }, (_, i) => ({
-        id: `${next.rollNumber}-${i}`,
-        value: Math.min(6, Math.max(1, Math.floor(random() * 6) + 1)),
-    }));
+    next.dice = Array.from({ length: count }, (_, i) => {
+        const slot = slots[i] ?? i;
+        const config = resolveDiceConfig(diceConfig, slot);
+        return {
+            id: `${next.rollNumber}-${i}`,
+            value: rollWeightedFace(config.weights, random),
+            slot,
+            // dieId 供护符/套装等扩展读取；普通模式为 null。
+            dieId: config.dieId,
+        };
+    });
     if (!hasScore(next.dice.map((d) => d.value))) {
         addEvent(next, "farkle", next.turnScore);
         next.turnScore = 0;

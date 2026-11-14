@@ -13,10 +13,10 @@ const emit = defineEmits(["challenge"]);
     <section class="opponents-card" aria-labelledby="kingdom-opponents-title">
         <div class="opponents-head">
             <div>
-                <span class="opponents-eyebrow">THE ROYAL CHALLENGERS</span>
+                <span class="opponents-eyebrow">THE ROYAL OPPONENTS</span>
                 <h2 id="kingdom-opponents-title" class="opponents-title">选择对手</h2>
             </div>
-            <span class="opponents-count">5 位</span>
+            <span class="opponents-count">{{ opponents.length }} 位</span>
         </div>
         <div class="opponents-list">
             <article v-for="(opponent, index) in opponents" :key="opponent.id" class="opponent-row">

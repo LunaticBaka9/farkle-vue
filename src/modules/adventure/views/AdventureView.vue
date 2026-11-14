@@ -16,9 +16,7 @@ onBeforeUnmount(() => deactivateSession("adventure"));
 </script>
 
 <template>
-    <section
-        class="adventure"
-        aria-label="冒险模式">
+    <section class="adventure" aria-label="冒险模式">
         <div class="adventure-copy">
             <span class="adventure-eyebrow">ADVENTURE MAP</span>
             <h1 class="adventure-title">冒险模式</h1>

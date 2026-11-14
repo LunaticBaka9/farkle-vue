@@ -29,7 +29,9 @@ export function createNewGameAction({ game, selected, ui, resetAnimation }) {
         // 表单里的名称对 AI 和本地模式都有效；空值回退到该模式的默认名字。
         const fallback = mode === "ai" ? ["你", "NOVA"] : ["玩家一", "玩家二"];
         fresh.players.forEach((player, index) => {
-            const name = String(names?.[index] ?? "").trim().slice(0, 24);
+            const name = String(names?.[index] ?? "")
+                .trim()
+                .slice(0, 24);
             player.name = name || fallback[index];
         });
         selected.value = [];

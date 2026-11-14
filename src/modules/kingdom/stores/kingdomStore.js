@@ -1,7 +1,12 @@
 // 天国大厅状态：金币、收藏和当前挑战；由大厅视图与对战路由共同读取。
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import { DEFAULT_KINGDOM_STATE, KINGDOM_OPPONENTS, KINGDOM_SHOP_ITEMS } from "../data/items.js";
+import {
+    DEFAULT_KINGDOM_STATE,
+    KINGDOM_DICE_MAX_COPIES,
+    KINGDOM_OPPONENTS,
+    KINGDOM_SHOP_ITEMS,
+} from "../data/items.js";
 import { restoreKingdomState, saveKingdomState } from "../storage/kingdomStorage.js";
 import {
     clearActiveBattle,
@@ -17,20 +22,42 @@ export const useKingdomStore = defineStore("kingdom", () => {
     const activeBattle = ref(restoreActiveBattle());
     const opponents = KINGDOM_OPPONENTS;
     const shopItems = KINGDOM_SHOP_ITEMS;
+    const maxDiceCopies = KINGDOM_DICE_MAX_COPIES;
+    const ownedCounts = computed(() => {
+        const counts = {};
+        for (const id of ownedIds.value) counts[id] = (counts[id] ?? 0) + 1;
+        return counts;
+    });
     const opponentCount = computed(() => KINGDOM_OPPONENTS.length);
 
     function persistProgress() {
         saveKingdomState({ coins: coins.value, ownedIds: ownedIds.value });
     }
 
-    // 购买商品：库存判断和金币扣减都在 store 内完成，视图只负责显示结果。
+    // 骰子可按颗重复购买，最多 6 颗；普通道具仍然只能持有一件。
     function purchase(item) {
-        if (ownedIds.value.includes(item.id)) return { ok: false, message: `${item.name} 已在收藏中。` };
+        const currentCount = ownedCounts.value[item.id] ?? 0;
+        const maxCount = item.category === "dice" ? maxDiceCopies : 1;
+        if (currentCount >= maxCount) {
+            return {
+                ok: false,
+                message:
+                    item.category === "dice"
+                        ? `${item.name} 已持有 ${maxCount} 颗，无法继续购买。`
+                        : `${item.name} 已在收藏中。`,
+            };
+        }
         if (coins.value < item.price) return { ok: false, message: "金币不足，无法购买该物品。" };
         coins.value -= item.price;
         ownedIds.value = [...ownedIds.value, item.id];
         persistProgress();
-        return { ok: true, message: `购买成功：${item.name}。` };
+        return {
+            ok: true,
+            message:
+                item.category === "dice"
+                    ? `购买成功：${item.name} ×1（已持有 ${currentCount + 1}/${maxCount} 颗）。`
+                    : `购买成功：${item.name}。`,
+        };
     }
 
     // 挑战入口：先扣挑战金并记录对手，导航由大厅视图负责。
@@ -52,6 +79,15 @@ export const useKingdomStore = defineStore("kingdom", () => {
         clearKingdomBattleSnapshot();
     }
 
+    // 对局结算钩子通过此方法发放金币，保持金币与存档同步。
+    function grantCoins(amount) {
+        const reward = Math.max(0, Math.round(Number(amount) || 0));
+        if (!reward) return 0;
+        coins.value += reward;
+        persistProgress();
+        return reward;
+    }
+
     function resetProgress() {
         coins.value = DEFAULT_KINGDOM_STATE.coins;
         ownedIds.value = [...DEFAULT_KINGDOM_STATE.ownedIds];
@@ -66,11 +102,14 @@ export const useKingdomStore = defineStore("kingdom", () => {
     return {
         coins,
         ownedIds,
+        ownedCounts,
+        maxDiceCopies,
         activeBattle,
         opponents,
         shopItems,
         opponentCount,
         purchase,
+        grantCoins,
         startChallenge,
         endBattle,
         resetProgress,

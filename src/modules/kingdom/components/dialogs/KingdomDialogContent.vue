@@ -1,6 +1,6 @@
 <script setup>
 import AppIcon from "../../../../shared/components/AppIcon.vue";
-import { KINGDOM_DICE } from "../../data/kingdomItems";
+import KingdomDiceLoadout from "../KingdomDiceLoadout.vue";
 
 // KingdomDialogs 根据 modal 状态挂载本视图；按钮事件交回天国大厅流程。
 defineProps({ modal: String, theme: String });
@@ -10,8 +10,6 @@ const kingdomItems = [
     { name: "古堡金币袋", detail: "可在天国模式中携带入场", icon: "bank" },
     { name: "幸运火花", detail: "正在等待下一次奇遇", icon: "spark" },
 ];
-// 骰子列表直接读特殊骰子目录，避免弹窗再维护一份名称和效果文案。
-const kingdomDice = KINGDOM_DICE;
 </script>
 
 <template>
@@ -36,19 +34,10 @@ const kingdomDice = KINGDOM_DICE;
     <section v-else-if="modal === 'kingdom-dice-list'" class="kh-section">
         <div class="dlg-eyebrow">COLLECTION OF KINGDOM</div>
         <h2 id="kingdom-dice-list-title" class="dlg-h2 kh-heading">天国骰子列表</h2>
-        <p class="dlg-lede">当前收藏的主题骰子会在天国模式中使用。</p>
-        <div class="kh-list">
-            <div v-for="(dice, index) in kingdomDice" :key="dice.id" class="kh-item">
-                <span class="kh-icon"><AppIcon :name="dice.icon" :size="21" /></span>
-                <span class="kh-text kh-text-grow">
-                    <strong class="kh-name">{{ dice.name }}</strong>
-                    <small class="kh-detail">{{ dice.desc }}</small>
-                </span>
-                <small class="kh-index">{{ String(index + 1).padStart(2, "0") }}</small>
-            </div>
-        </div>
+        <p class="dlg-lede">选择一个槽位，再从库存中装配骰子；6 个槽位会整组带入下一场挑战。</p>
+        <KingdomDiceLoadout />
         <button class="dlg-btn primary kh-close" @click="emit('close')">
-            返回天国<AppIcon name="arrow" :size="17" />
+            收起列表<AppIcon name="arrow" :size="17" />
         </button>
     </section>
 
@@ -59,9 +48,7 @@ const kingdomDice = KINGDOM_DICE;
             金币与收藏将恢复为初始状态：1,250 金币，以及皇家骰子、皇家十字印记和古堡金币袋。此操作无法撤销。
         </p>
         <div class="kh-actions">
-            <button type="button" class="dlg-btn secondary kh-action" @click="emit('close')">
-                保留当前状态
-            </button>
+            <button type="button" class="dlg-btn secondary kh-action" @click="emit('close')">保留当前状态</button>
             <button type="button" class="dlg-btn primary kh-action" @click="emit('resetKingdomState')">
                 <AppIcon name="restart" :size="17" />重置状态
             </button>

@@ -236,6 +236,4 @@ defineProps({ targetScore: Number, format: Function });
     font-size: 9px;
     font-weight: 400;
 }
-
-
 </style>
