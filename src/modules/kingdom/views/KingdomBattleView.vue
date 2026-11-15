@@ -6,18 +6,19 @@ import { useRoute, useRouter } from "vue-router";
 import { useKingdomBattleStore } from "../stores/kingdomBattleStore.js";
 import { useDiceLoadoutStore } from "../stores/useDiceLoadoutStore";
 import { useKingdomStore } from "../stores/kingdomStore.js";
+import { useInventoryStore } from "../stores/useInventoryStore.ts";
 import { useUiStore } from "../../../shared/stores/uiStore.js";
 import { activateSession, deactivateSession } from "../../../shared/session/moduleSession.js";
 import { openSwitchRequest } from "../../../shared/session/switchRequest.js";
 import AppIcon from "../../../shared/components/AppIcon.vue";
 import Die from "../../../shared/components/Die.vue";
-import { KINGDOM_EQUIPMENT } from "../data/items.js";
 
 const route = useRoute();
 const router = useRouter();
 const battle = useKingdomBattleStore();
 const loadout = useDiceLoadoutStore();
 const kingdom = useKingdomStore();
+const inventory = useInventoryStore();
 const ui = useUiStore();
 const ready = ref(false);
 
@@ -55,12 +56,13 @@ const {
     ENTRY_SCORE,
 } = battle;
 
-// 装备栏直接读取天国大厅的收藏，避免对战页维护第二份商品数据。
+// 对战装备栏读取背包实际装备的徽章，不展示未装备的收藏。
 const equippedItems = computed(() =>
-    kingdom.ownedIds
-        .filter((id) => KINGDOM_EQUIPMENT.item[id])
-        .map((id) => KINGDOM_EQUIPMENT.item[id])
-        .slice(0, 2),
+    inventory.equippedSlots
+        .filter((id) => id !== null)
+        .map((id) => inventory.itemDefinitions.find((item) => item.id === id))
+        .filter((item) => item !== undefined)
+        .map((item) => ({ ...item, icon: "shield" })),
 );
 // 出战骰子来自 loadout store 的 6 个槽位；重复的普通骰也会逐颗显示。
 const equippedDice = computed(() => loadout.equippedDice);

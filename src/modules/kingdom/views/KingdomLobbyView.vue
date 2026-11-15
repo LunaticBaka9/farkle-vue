@@ -34,6 +34,12 @@ function purchaseItem(item) {
     showNotice(result.message);
 }
 
+// 商店按钮调用；刷新价格与商品轮换由 kingdomStore 校验和持久化。
+function refreshShop() {
+    const result = kingdom.refreshShop();
+    showNotice(result.message);
+}
+
 function challengeOpponent(opponent) {
     const result = kingdom.startChallenge(opponent);
     if (!result.ok) {
@@ -90,7 +96,9 @@ onBeforeUnmount(() => {
                 :owned-counts="kingdom.ownedCounts"
                 :max-dice-count="kingdom.maxDiceCopies"
                 :shop-items="kingdom.shopItems"
-                @purchase="purchaseItem" />
+                :refresh-cost="kingdom.shopRefreshCost"
+                @purchase="purchaseItem"
+                @refresh="refreshShop" />
         </div>
 
         <Transition name="fade">

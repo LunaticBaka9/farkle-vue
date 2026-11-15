@@ -12,6 +12,7 @@ export function createRollController({
     notify,
     getDiceLoadout = () => null,
     getDiceWeights = () => null,
+    getScoreModifiers = () => [],
     random = Math.random,
     isReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
 }) {
@@ -32,7 +33,13 @@ export function createRollController({
     function doRoll(ids = selected.value, automated = false) {
         if (rolling.value || (isAi.value && !automated)) return;
         try {
-            const result = rollDice(game.value, ids, random, getDiceLoadout() ?? getDiceWeights());
+            const result = rollDice(
+                game.value,
+                ids,
+                random,
+                getDiceLoadout() ?? getDiceWeights(),
+                getScoreModifiers(),
+            );
             const count = result.dice.length;
             rolling.value = true;
             aiChoice.value = "";

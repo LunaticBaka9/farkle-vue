@@ -1,6 +1,13 @@
 // 纯对局引擎：由 shared/game/createGameSessionStore.js 的玩家动作和 shared/game/aiAutomation.js 的 AI 流程调用。
 // 公开动作接收旧 game 并返回新 game；本层不读取 Vue 状态或浏览器存储。
-import { ENTRY_SCORE, TARGET_SCORE, hasScore, scoreDice, scoringOptions, farkleProbability } from "./scoring.js";
+import {
+    ENTRY_SCORE,
+    TARGET_SCORE,
+    hasScore,
+    scoreDiceWithModifiers,
+    scoringOptions,
+    farkleProbability,
+} from "./scoring.js";
 import { rollWeightedFace } from "./diceWeights.js";
 
 /** 校验获胜分数是否安全且符合 500 分间隔。 */
@@ -76,18 +83,23 @@ function addEvent(game, type, points = 0) {
 /**
  * 计算用户当前选择的骰子 ID 对应的计分；重复 ID 或非法 ID 返回 0。
  */
-export function selectionScore(game, ids) {
+export function selectionScore(game, ids, modifiers = []) {
     if (!ids.length || new Set(ids).size !== ids.length) return 0;
     const chosen = game.dice.filter((d) => ids.includes(d.id));
-    return chosen.length === ids.length ? scoreDice(chosen.map((d) => d.value)) : 0;
+    return chosen.length === ids.length
+        ? scoreDiceWithModifiers(
+              chosen.map((d) => d.value),
+              modifiers,
+          )
+        : 0;
 }
 
 /**
  * 判断收分动作是否合法，包括首次收分门槛和必须选择计分骰子的规则。
  */
-export function canBank(game, ids = []) {
+export function canBank(game, ids = [], modifiers = []) {
     if (game.phase !== "selecting") return false;
-    const selected = selectionScore(game, ids);
+    const selected = selectionScore(game, ids, modifiers);
     // At least one scoring die must be set aside after every roll.
     if (!selected) return false;
     const total = game.turnScore + selected;
@@ -110,7 +122,7 @@ function resolveDiceConfig(diceConfig, slot) {
  * 执行掷骰或继续掷骰。
  * random 参数允许测试注入固定随机序列；diceConfig 支持“权重数组”或完整的 6 颗骰子配置。
  */
-export function rollDice(game, ids = [], random = Math.random, diceConfig = null) {
+export function rollDice(game, ids = [], random = Math.random, diceConfig = null, modifiers = []) {
     if (!["ready", "selecting"].includes(game.phase)) throw new Error("当前不能掷骰");
     const next = copy(game);
     let count = 6;
@@ -118,7 +130,7 @@ export function rollDice(game, ids = [], random = Math.random, diceConfig = null
     // slot 记录该骰子来自装备栏的哪个槽位，继续掷骰时沿用原槽位权重。
     let slots = [0, 1, 2, 3, 4, 5];
     if (game.phase === "selecting") {
-        const score = selectionScore(game, ids);
+        const score = selectionScore(game, ids, modifiers);
         if (!score) throw new Error("请先选出至少一组可计分骰子");
         const chosen = game.dice.filter((d) => ids.includes(d.id));
         next.kept.push({ roll: game.rollNumber, values: chosen.map((d) => d.value), score });
@@ -170,10 +182,10 @@ function endTurn(game) {
 /**
  * 将选中得分与当前回合累计得分收入玩家总分，并处理交接或最终回合。
  */
-export function bankPoints(game, ids = []) {
-    if (!canBank(game, ids)) throw new Error("未达到首次收分门槛，或所选骰子含有不可计分骰子");
+export function bankPoints(game, ids = [], modifiers = []) {
+    if (!canBank(game, ids, modifiers)) throw new Error("未达到首次收分门槛，或所选骰子含有不可计分骰子");
     const next = copy(game);
-    const points = next.turnScore + selectionScore(next, ids);
+    const points = next.turnScore + selectionScore(next, ids, modifiers);
     next.players[next.active].score += points;
     addEvent(next, "bank", points);
     if (next.finalStarter === null && next.players[next.active].score >= next.targetScore) {

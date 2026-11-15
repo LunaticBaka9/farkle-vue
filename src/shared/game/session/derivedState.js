@@ -6,12 +6,12 @@ import { format } from "../../utils/format.js";
 
 export const difficultyLabels = { cautious: "稳健型", balanced: "均衡型", bold: "冒险型" };
 
-export function createSessionDerivedState({ game, selected, rolling, aiChoice }) {
+export function createSessionDerivedState({ game, selected, rolling, aiChoice, getScoreModifiers = () => [] }) {
     const isAi = computed(() => game.value.mode === "ai" && game.value.active === 1);
     const player = computed(() => game.value.players[game.value.active]);
     const round = computed(() => Math.ceil(game.value.turn / 2));
     const targetScore = computed(() => game.value.targetScore);
-    const chosenScore = computed(() => selectionScore(game.value, selected.value));
+    const chosenScore = computed(() => selectionScore(game.value, selected.value, getScoreModifiers()));
     const pendingScore = computed(() => game.value.turnScore + chosenScore.value);
     const validSelection = computed(() => chosenScore.value > 0);
     const canRollNow = computed(
@@ -20,7 +20,9 @@ export function createSessionDerivedState({ game, selected, rolling, aiChoice })
             !isAi.value &&
             (game.value.phase === "ready" || (game.value.phase === "selecting" && validSelection.value)),
     );
-    const canBankNow = computed(() => !rolling.value && !isAi.value && canBank(game.value, selected.value));
+    const canBankNow = computed(
+        () => !rolling.value && !isAi.value && canBank(game.value, selected.value, getScoreModifiers()),
+    );
     const nextDiceCount = computed(() =>
         game.value.phase === "ready" ? 6 : game.value.dice.length - selected.value.length || 6,
     );

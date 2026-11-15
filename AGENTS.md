@@ -19,6 +19,7 @@ Follow nearby Vue SFC and JavaScript ES module patterns: four-space indentation,
 
 When adding a module or meaningful handler, add a concise Chinese comment stating who calls it and where its inputs or data originate. Keep component data flow explicit through props and emits; avoid directly mutating a parent's state from child views.
 
+- 在编写代码的时候，请使用注释解释模块的用处和使用方法
 - 严格遵守单一职责原则，禁止将 UI/输入输出、业务逻辑、数据存储写在同一个文件或函数中。
 - 每次回答只修改或生成一个单一职责的模块/函数，不要一次性输出包含所有逻辑的巨型文件。
 - 依赖必须通过参数或接口注入，禁止硬编码耦合。

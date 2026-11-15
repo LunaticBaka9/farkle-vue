@@ -47,6 +47,17 @@ export function scoreDice(values) {
 }
 
 /**
+ * 将已装备道具的平分加成叠加到合法骰组； modifiers 由模式层提供。
+ */
+export function scoreDiceWithModifiers(values, modifiers = []) {
+    const baseScore = scoreDice(values);
+    if (!baseScore || !modifiers.length) return baseScore;
+    const context = { values: [...values], baseScore, bonusFlat: 0 };
+    for (const modifier of modifiers) modifier.onCalculateScore(context);
+    return Math.max(0, baseScore + context.bonusFlat);
+}
+
+/**
  * 穷举当前骰子的所有选择组合，并按分数由高到低排列。
  * 调用方：engine.chooseAiMove、store.suggest；输入来自当前桌面 dice[{id,value}]。
  *
@@ -55,12 +66,15 @@ export function scoreDice(values) {
  * 原理：n≤6 时非空子集最多 63 个，穷举比按牌型搜索更不容易漏组合。
  * remaining 用于 AI 估算下一次掷剩余骰子的爆骰风险；0 表示 Hot Dice。
  */
-export function scoringOptions(dice) {
+export function scoringOptions(dice, modifiers = []) {
     const options = [];
     for (let mask = 1; mask < 2 ** dice.length; mask++) {
         // mask & (1 << index) 为真时，当前子集包含第 index 颗骰子。
         const chosen = dice.filter((_, index) => mask & (1 << index));
-        const score = scoreDice(chosen.map((die) => die.value));
+        const score = scoreDiceWithModifiers(
+            chosen.map((die) => die.value),
+            modifiers,
+        );
         if (score) options.push({ ids: chosen.map((die) => die.id), score, remaining: dice.length - chosen.length });
     }
     // 高分优先；同分时留下更少骰子（更容易 Hot Dice）。

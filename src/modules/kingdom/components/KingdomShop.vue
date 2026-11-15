@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import AppIcon from "../../../shared/components/AppIcon.vue";
 
 const props = defineProps({
@@ -6,9 +7,11 @@ const props = defineProps({
     ownedCounts: { type: Object, required: true },
     maxDiceCount: { type: Number, required: true },
     shopItems: { type: Array, required: true },
+    refreshCost: { type: Number, required: true },
 });
 
-const emit = defineEmits(["purchase"]);
+const emit = defineEmits(["purchase", "refresh"]);
+const visibleOwnedCount = computed(() => props.shopItems.filter((item) => ownedCount(item) > 0).length);
 
 // 卡片计数直接读取 kingdomStore 的 ownedCounts，支持骰子重复购买。
 function ownedCount(item) {
@@ -40,9 +43,12 @@ function buttonLabel(item) {
                 <span class="shop-eyebrow">KINGDOM MARKET</span>
                 <h2 id="kingdom-shop-title" class="shop-title">古堡商店</h2>
             </div>
-            <span class="shop-count">
-                {{ Object.keys(ownedCounts).filter((id) => ownedCounts[id] > 0).length }}/{{ shopItems.length }} 已收藏
-            </span>
+            <div class="shop-head-actions">
+                <span class="shop-count">{{ visibleOwnedCount }}/{{ shopItems.length }} 已收藏</span>
+                <button type="button" class="shop-refresh" :disabled="coins < refreshCost" @click="emit('refresh')">
+                    <AppIcon name="restart" :size="15" />刷新 · {{ refreshCost }} 金币
+                </button>
+            </div>
         </div>
         <div class="shop-grid">
             <article v-for="item in shopItems" :key="item.id" class="shop-item">
@@ -91,11 +97,46 @@ function buttonLabel(item) {
     border-bottom: 1px solid #b99b6120;
 }
 
+.shop-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shop-refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #b99b6150;
+    border-radius: 9999px;
+    background: #b99b6112;
+    color: #e3dbc8;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.shop-refresh:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
 /* 窄屏商店标题栏：收紧左右内边距。 */
 @media (max-width: 520px) {
     .shop-head {
         padding-right: 14px;
         padding-left: 14px;
+    }
+
+    .shop-head-actions {
+        align-items: flex-end;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .shop-refresh {
+        padding: 6px 9px;
+        font-size: 11px;
     }
 }
 
@@ -155,6 +196,8 @@ function buttonLabel(item) {
 
 /* 商品卡片：默认暗金描边，悬停时上浮并提亮。 */
 .shop-item {
+    display: flex;
+    flex-direction: column;
     padding: 18px;
     border: 1px solid #b99b6124;
     border-radius: 12px;
@@ -173,6 +216,7 @@ function buttonLabel(item) {
 /* 商品主信息：图标与文字横向排列。 */
 .shop-item-main {
     display: flex;
+    flex: 1;
     align-items: flex-start;
     gap: 12px;
 }
@@ -195,14 +239,13 @@ function buttonLabel(item) {
     min-width: 0;
 }
 
-/* 商品名称：单行省略，避免撑破卡片。 */
+/* 商品名称：空间不足时自动换行，完整显示长标题。 */
 .shop-name {
     display: block;
-    overflow: hidden;
     color: #e7dec4;
-    font-size: 20px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 18px;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 /* 商品说明：暖灰色小字。 */
@@ -224,7 +267,8 @@ function buttonLabel(item) {
 /* 购买按钮骨架：占满卡片宽度。 */
 .shop-buy {
     width: 100%;
-    margin-top: 15px;
+    flex-shrink: 0;
+    margin-top: auto;
     padding: 12px 15px;
     border: 1px solid #c6b4775c;
     font-size: 15px;

@@ -1,5 +1,5 @@
 // 对局会话工厂：组合派生状态、动画、回合动作、设置和 AI 生命周期。
-import { computed, onScopeDispose, ref, shallowRef, watch } from "vue";
+import { computed, onScopeDispose, ref, shallowRef, unref, watch } from "vue";
 import { defineStore } from "pinia";
 import { createGame } from "./engine.js";
 import { loadSessionGame, persistSessionGame } from "./session/persistenceAdapter.js";
@@ -14,13 +14,24 @@ import { createPlayerActions } from "./session/playerActions.js";
 import { ENTRY_SCORE } from "./scoring.js";
 import { format } from "../utils/format.js";
 
-export function createGameSessionStore({ id, storageKey, getUiStore, switchState, getDiceLoadout = () => null, getDiceWeights = () => null, onMatchEnd = null }) {
+export function createGameSessionStore({
+    id,
+    storageKey,
+    getUiStore,
+    switchState,
+    getDiceLoadout = () => null,
+    getDiceWeights = () => null,
+    createScoreModifiers = () => [],
+    onMatchEnd = null,
+}) {
     return defineStore(id, () => {
         const ui = getUiStore();
+        const scoreModifiers = createScoreModifiers();
         // 只读取当前模块存档；结构不兼容时 restoreGame 返回 null，由工厂创建新局。
         const { restored, restoredNotice: initialRestoredNotice } = loadSessionGame({ storageKey });
         let restoredNotice = initialRestoredNotice;
         const game = shallowRef(restored || createGame());
+        const getActiveScoreModifiers = () => (game.value.active === 0 ? unref(scoreModifiers) : []);
         const selected = ref([]);
         const rolling = ref(false);
         const rollingFaces = ref([]);
@@ -32,7 +43,13 @@ export function createGameSessionStore({ id, storageKey, getUiStore, switchState
             matchDiceLoadout.value = Array.isArray(loadout) && loadout.length === 6 ? loadout : null;
         }
 
-        const derived = createSessionDerivedState({ game, selected, rolling, aiChoice });
+        const derived = createSessionDerivedState({
+            game,
+            selected,
+            rolling,
+            aiChoice,
+            getScoreModifiers: getActiveScoreModifiers,
+        });
         const roll = createRollController({
             game,
             selected,
@@ -44,6 +61,7 @@ export function createGameSessionStore({ id, storageKey, getUiStore, switchState
             notify: ui.notify,
             getDiceLoadout: () => matchDiceLoadout.value ?? getDiceLoadout(),
             getDiceWeights,
+            getScoreModifiers: getActiveScoreModifiers,
         });
         const turn = createTurnController({
             game,
@@ -53,6 +71,7 @@ export function createGameSessionStore({ id, storageKey, getUiStore, switchState
             isAi: derived.isAi,
             play: ui.play,
             notify: ui.notify,
+            getScoreModifiers: getActiveScoreModifiers,
         });
         const selection = createSelectionController({
             game,
@@ -60,6 +79,7 @@ export function createGameSessionStore({ id, storageKey, getUiStore, switchState
             rolling,
             isAi: derived.isAi,
             play: ui.play,
+            getScoreModifiers: getActiveScoreModifiers,
         });
         const createNewGame = createNewGameAction({
             game,

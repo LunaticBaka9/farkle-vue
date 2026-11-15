@@ -7,7 +7,13 @@ import {
     KINGDOM_OPPONENTS,
     KINGDOM_SHOP_ITEMS,
 } from "../data/items.js";
+import {
+    chooseShopItems,
+    KINGDOM_SHOP_ITEM_COUNT,
+    KINGDOM_SHOP_REFRESH_COST,
+} from "../domain/shopRotation.js";
 import { restoreKingdomState, saveKingdomState } from "../storage/kingdomStorage.js";
+import { restoreKingdomShopIds, saveKingdomShopIds } from "../storage/kingdomShopStorage.js";
 import {
     clearActiveBattle,
     clearKingdomBattleSnapshot,
@@ -21,8 +27,14 @@ export const useKingdomStore = defineStore("kingdom", () => {
     const ownedIds = ref(saved.ownedIds);
     const activeBattle = ref(restoreActiveBattle());
     const opponents = KINGDOM_OPPONENTS;
-    const shopItems = KINGDOM_SHOP_ITEMS;
+    const shopItemById = new Map(KINGDOM_SHOP_ITEMS.map((item) => [item.id, item]));
+    const savedShopIds = restoreKingdomShopIds();
+    const restoredShopItems = savedShopIds?.map((id) => shopItemById.get(id) ?? null);
+    const hasValidShopItems =
+        restoredShopItems?.length === KINGDOM_SHOP_ITEM_COUNT && restoredShopItems.every((item) => item !== null);
+    const shopItems = ref(hasValidShopItems ? restoredShopItems : chooseShopItems(KINGDOM_SHOP_ITEMS));
     const maxDiceCopies = KINGDOM_DICE_MAX_COPIES;
+    const shopRefreshCost = KINGDOM_SHOP_REFRESH_COST;
     const ownedCounts = computed(() => {
         const counts = {};
         for (const id of ownedIds.value) counts[id] = (counts[id] ?? 0) + 1;
@@ -32,6 +44,28 @@ export const useKingdomStore = defineStore("kingdom", () => {
 
     function persistProgress() {
         saveKingdomState({ coins: coins.value, ownedIds: ownedIds.value });
+    }
+
+    // 付费刷新或对局结算调用；商品来源为完整天国商店目录。
+    function rotateShop() {
+        shopItems.value = chooseShopItems(KINGDOM_SHOP_ITEMS);
+        saveKingdomShopIds(shopItems.value.map((item) => item.id));
+    }
+
+    // 商店刷新按钮调用；金币不足时不扣款且保留当前商品。
+    function refreshShop() {
+        if (coins.value < shopRefreshCost) {
+            return { ok: false, message: `金币不足，刷新商店需要 ${shopRefreshCost} 金币。` };
+        }
+        coins.value -= shopRefreshCost;
+        persistProgress();
+        rotateShop();
+        return { ok: true, message: `商店已刷新，消耗 ${shopRefreshCost} 金币。` };
+    }
+
+    // 对局结束结算调用；免费刷新并保存新一轮商品。
+    function refreshShopAfterMatch() {
+        rotateShop();
     }
 
     // 骰子可按颗重复购买，最多 6 颗；普通道具仍然只能持有一件。
@@ -99,6 +133,8 @@ export const useKingdomStore = defineStore("kingdom", () => {
         return opponents.find((item) => item.id === opponentId) ?? null;
     }
 
+    if (!hasValidShopItems) saveKingdomShopIds(shopItems.value.map((item) => item.id));
+
     return {
         coins,
         ownedIds,
@@ -107,8 +143,11 @@ export const useKingdomStore = defineStore("kingdom", () => {
         activeBattle,
         opponents,
         shopItems,
+        shopRefreshCost,
         opponentCount,
         purchase,
+        refreshShop,
+        refreshShopAfterMatch,
         grantCoins,
         startChallenge,
         endBattle,

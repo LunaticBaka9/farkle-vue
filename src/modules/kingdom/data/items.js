@@ -1,9 +1,12 @@
+import { INVENTORY_ITEMS } from "./inventoryItems.ts";
+import { KINGDOM_DICE } from "./dices.ts";
+
 // 天国模式静态目录：由 kingdom 模式页、商店和对战装备展示共同读取。
 export const KINGDOM_DICE_MAX_COPIES = 6;
 
 export const DEFAULT_KINGDOM_STATE = Object.freeze({
     coins: 1250,
-    ownedIds: Object.freeze(["item-cross", "item-bag", "dice-royal"]),
+    ownedIds: Object.freeze([]),
 });
 
 // 对手参数由 KingdomMode 传给对战入口；挑战金额、目标和难度均以此目录为准。
@@ -55,42 +58,30 @@ export const KINGDOM_OPPONENTS = Object.freeze([
     },
 ]);
 
-// 商店渲染此列表；收藏和装备使用稳定 id 关联，不在视图组件里重复定义商品信息。
+// 商店的徽章商品直接从背包目录生成，名称、效果和售价不再重复维护。
+const KINGDOM_BADGE_SHOP_ITEMS = INVENTORY_ITEMS.map((item) => ({
+    id: item.id,
+    category: "item",
+    name: item.name,
+    detail: `${item.tierLabel} · ${item.effect}`,
+    price: item.price,
+    icon: "shield",
+}));
+
+// 骰子名称、描述和 ID 来自真实骰子目录；无限供应的普通骰无需购买。
+const KINGDOM_DICE_SHOP_ITEMS = KINGDOM_DICE.filter((die) => !die.isInfinite).map((die) => ({
+    id: die.id,
+    category: "dice",
+    name: die.name,
+    detail: die.desc ?? "",
+    price: 500,
+    icon: die.icon,
+}));
+
+// 商店渲染此列表；骰子与徽章均从各自的实际目录生成。
 export const KINGDOM_SHOP_ITEMS = Object.freeze([
-    { id: "dice-royal", category: "dice", name: "皇家骰子", detail: "金色纹章，庄重典雅", price: 320, icon: "dice" },
-    { id: "dice-knight", category: "dice", name: "骑士骰子", detail: "银灰盔甲，坚毅可靠", price: 480, icon: "shield" },
-    {
-        id: "dice-lucky",
-        category: "dice",
-        name: "幸运骰子",
-        detail: "低调闪光，为关键一掷增添运气",
-        price: 650,
-        icon: "spark",
-    },
-    {
-        id: "item-cross",
-        category: "item",
-        name: "皇家十字印记",
-        detail: "稀有护符，可用于天国对局",
-        price: 220,
-        icon: "shield",
-    },
-    {
-        id: "item-bag",
-        category: "item",
-        name: "古堡金币袋",
-        detail: "古旧皮革，便于携带金币",
-        price: 180,
-        icon: "bank",
-    },
-    {
-        id: "item-spark",
-        category: "item",
-        name: "幸运火花",
-        detail: "等待下一次奇遇的神秘道具",
-        price: 360,
-        icon: "flame",
-    },
+    ...KINGDOM_DICE_SHOP_ITEMS,
+    ...KINGDOM_BADGE_SHOP_ITEMS,
 ]);
 
 // 对战牌桌从同一商品目录生成装备名称与图标，保证商店与装备展示一致。

@@ -1,11 +1,20 @@
 // 回合动作控制器：只负责收分和交接回合。
 import { bankPoints, finishFarkle, startNextTurn } from "../engine.js";
 
-export function createTurnController({ game, selected, aiChoice, rolling, isAi, play, notify }) {
+export function createTurnController({
+    game,
+    selected,
+    aiChoice,
+    rolling,
+    isAi,
+    play,
+    notify,
+    getScoreModifiers = () => [],
+}) {
     function doBank(ids = selected.value, automated = false) {
         if (rolling.value || (isAi.value && !automated)) return;
         try {
-            game.value = bankPoints(game.value, ids);
+            game.value = bankPoints(game.value, ids, getScoreModifiers());
             selected.value = [];
             aiChoice.value = "";
             play("bank");

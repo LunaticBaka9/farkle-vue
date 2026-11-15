@@ -5,6 +5,7 @@ import { switchRequest } from "../../../shared/session/switchRequest.js";
 import { KINGDOM_BATTLE_STORAGE_KEY } from "../storage/battleStorage.js";
 import { useKingdomStore } from "./kingdomStore.js";
 import { useDiceLoadoutStore } from "./useDiceLoadoutStore";
+import { useInventoryModifiers } from "../composables/useInventoryModifiers";
 import { applyMatchSettlement } from "../services/matchSettlement.js";
 
 export const useKingdomBattleStore = createGameSessionStore({
@@ -14,9 +15,12 @@ export const useKingdomBattleStore = createGameSessionStore({
     switchState: switchRequest,
     // 挑战开始时由大厅传入冻结配置；刷新或直接进入时回退到当前装备。
     getDiceLoadout: () => useDiceLoadoutStore().equippedConfigs,
-    // 终局钩子只负责经济结算，胜负弹窗仍由会话工厂统一打开。
+    createScoreModifiers: useInventoryModifiers,
+    // 终局钩子结算奖励并免费轮换商店；胜负弹窗由会话工厂统一打开。
     onMatchEnd: (result) => {
-        const settlement = applyMatchSettlement({ result, kingdom: useKingdomStore() });
-        if (settlement.messages.length) useUiStore().notify(settlement.messages.join(" "));
+        const kingdom = useKingdomStore();
+        const settlement = applyMatchSettlement({ result, kingdom });
+        kingdom.refreshShopAfterMatch();
+        useUiStore().notify([...settlement.messages, "对局结束，商店已刷新。"].join(" "));
     },
 });
